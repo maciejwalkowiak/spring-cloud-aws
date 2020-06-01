@@ -51,17 +51,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = Config.class)
 public class ComplexNotificationEndpointControllerTest {
 
-	@EnableWebMvc
-	@EnableSns
-	@Import(ComplexNotificationTestController.class)
-	static class Config {
-
-		@Bean
-		AmazonSNS amazonSNS() {
-			return Mockito.mock(AmazonSNS.class);
-		}
-	}
-
 	@Autowired
 	private WebApplicationContext context;
 
@@ -151,6 +140,18 @@ public class ComplexNotificationEndpointControllerTest {
 						+ "a3d210c228af87bd5d9597bf0d6093a1464e03af6650e992ecf546"
 						+ "05e020f04ad3d47796045c9f24d902e72e811a1ad59852cad453f4"
 						+ "0bddfb45");
+	}
+
+	@EnableWebMvc
+	@EnableSns
+	@Import(ComplexNotificationTestController.class)
+	static class Config {
+
+		@Bean
+		AmazonSNS amazonSNS() {
+			return Mockito.mock(AmazonSNS.class);
+		}
+
 	}
 
 }
