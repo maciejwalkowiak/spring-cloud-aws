@@ -20,8 +20,13 @@ import com.amazonaws.services.sns.AmazonSNS;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.aws.messaging.config.annotation.EnableSns;
+import org.springframework.cloud.aws.messaging.endpoint.NotificationEndpointControllerTest.Config;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -30,6 +35,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
@@ -42,8 +48,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration
+@ContextConfiguration(classes = Config.class)
 public class NotificationEndpointControllerTest {
+
+	@EnableWebMvc
+	@EnableSns
+	@Import(NotificationTestController.class)
+	static class Config {
+
+		@Bean
+		AmazonSNS amazonSNS() {
+			return Mockito.mock(AmazonSNS.class);
+		}
+	}
 
 	@Autowired
 	private WebApplicationContext context;
