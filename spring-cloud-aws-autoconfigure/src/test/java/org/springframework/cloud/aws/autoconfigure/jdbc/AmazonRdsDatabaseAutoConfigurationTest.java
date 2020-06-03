@@ -55,7 +55,7 @@ public class AmazonRdsDatabaseAutoConfigurationTest {
 		this.context = new AnnotationConfigApplicationContext();
 		this.context.register(ApplicationConfigurationWithoutReadReplica.class);
 		this.context.register(AmazonRdsDatabaseAutoConfiguration.class);
-		TestPropertyValues.of("cloud.aws.rds.test.password:secret").applyTo(this.context);
+		TestPropertyValues.of("cloud.aws.rds-config.endpoint.url:http://localhost:3333","cloud.aws.rds.test.password:secret").applyTo(this.context);
 
 		// Act
 		this.context.refresh();
@@ -140,8 +140,8 @@ public class AmazonRdsDatabaseAutoConfigurationTest {
 
 	public static class ApplicationConfigurationWithoutReadReplica {
 
-		@Bean
-		public AmazonRDSClient amazonRDS() {
+//		@Bean
+		public AmazonRDSClient amazonRDSClient() {
 			AmazonRDSClient client = Mockito.mock(AmazonRDSClient.class);
 			when(client.describeDBInstances(
 					new DescribeDBInstancesRequest().withDBInstanceIdentifier("test")))
@@ -164,7 +164,7 @@ public class AmazonRdsDatabaseAutoConfigurationTest {
 	public static class ApplicationConfigurationWithMultipleDatabases {
 
 		@Bean
-		public AmazonRDS amazonRDS() {
+		public AmazonRDSClient amazonRDSClient() {
 			AmazonRDSClient client = Mockito.mock(AmazonRDSClient.class);
 			when(client.describeDBInstances(
 					new DescribeDBInstancesRequest().withDBInstanceIdentifier("test")))
@@ -196,7 +196,7 @@ public class AmazonRdsDatabaseAutoConfigurationTest {
 	public static class ApplicationConfigurationWithReadReplica {
 
 		@Bean
-		public AmazonRDS amazonRDS() {
+		public AmazonRDSClient amazonRDSClient() {
 			AmazonRDSClient client = Mockito.mock(AmazonRDSClient.class);
 			when(client.describeDBInstances(
 					new DescribeDBInstancesRequest().withDBInstanceIdentifier("test")))
