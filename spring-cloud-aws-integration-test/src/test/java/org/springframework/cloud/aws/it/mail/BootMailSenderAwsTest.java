@@ -27,6 +27,7 @@ class BootMailSenderAwsTest extends MailSenderAwsTest {
 
 	@SpringBootApplication
 	static class BootMailSenderAwsTestConfig {
+
 	}
 
 }
