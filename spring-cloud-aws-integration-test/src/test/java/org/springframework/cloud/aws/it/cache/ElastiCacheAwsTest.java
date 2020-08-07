@@ -22,15 +22,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.aws.it.AWSIntegration;
-import org.springframework.cloud.aws.it.support.profile.AmazonWebserviceProfileValueSource;
 import org.springframework.cloud.aws.it.support.profile.IfAmazonWebserviceEnvironment;
-import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@ProfileValueSourceConfiguration(AmazonWebserviceProfileValueSource.class)
 @AWSIntegration
 public abstract class ElastiCacheAwsTest {
 

@@ -19,13 +19,14 @@ package org.springframework.cloud.aws.it.support.profile;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import org.springframework.test.annotation.IfProfileValue;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author Agim Emruli
+ * @author Maciej Walkowiak
  */
 @Retention(RetentionPolicy.RUNTIME)
-@IfProfileValue(name = "amazon-webservice-region-available", value = "true")
+@ExtendWith(IfAmazonWebserviceEnvironmentCondition.class)
 public @interface IfAmazonWebserviceEnvironment {
 
 }
