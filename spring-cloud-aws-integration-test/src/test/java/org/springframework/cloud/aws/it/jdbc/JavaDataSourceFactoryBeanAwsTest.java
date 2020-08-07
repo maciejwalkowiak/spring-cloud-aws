@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.aws.it.jdbc;
 
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.aws.it.IntegrationTestConfig;
 import org.springframework.cloud.aws.jdbc.config.annotation.EnableRdsInstance;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -30,7 +30,7 @@ import org.springframework.test.context.ContextConfiguration;
 		classes = JavaDataSourceFactoryBeanAwsTest.JavaDataSourceFactoryBeanAwsTestConfig.class)
 class JavaDataSourceFactoryBeanAwsTest extends DataSourceFactoryBeanAwsTest {
 
-	@Configuration
+	@TestConfiguration
 	@EnableRdsInstance(dbInstanceIdentifier = "RdsSingleMicroInstance",
 			password = "${rdsPassword}")
 	@Import(IntegrationTestConfig.class)

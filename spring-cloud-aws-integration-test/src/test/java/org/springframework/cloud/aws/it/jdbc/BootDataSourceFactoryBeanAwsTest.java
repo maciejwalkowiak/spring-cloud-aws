@@ -16,9 +16,15 @@
 
 package org.springframework.cloud.aws.it.jdbc;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.aws.autoconfigure.jdbc.AmazonRdsDatabaseAutoConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
  * @author Agim Emruli
@@ -35,6 +41,14 @@ class BootDataSourceFactoryBeanAwsTest extends DataSourceFactoryBeanAwsTest {
 			"file://${els.config.dir}/access.properties" })
 	static class BootDataSourceFactoryBeanAwsTestConfig {
 
+	}
+
+	@Autowired
+	private ApplicationContext applicationContext;
+
+	@Test
+	public void usesAutoConfiguration() {
+		assertThat(applicationContext.getBean(AmazonRdsDatabaseAutoConfiguration.class)).isNotNull();
 	}
 
 }
