@@ -21,8 +21,9 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -69,6 +70,17 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 
 	@Autowired
 	private ManualDeletionPolicyTestListener manualDeletionPolicyTestListener;
+
+	@Autowired
+	private AmazonSQS amazonSQS;
+
+	@Test
+	public void cleanUp() {
+		amazonSQS.listQueues()
+		.getQueueUrls()
+		.stream().filter(url -> url.contains("IntegrationTestStack"))
+		.forEach(url -> amazonSQS.purgeQueue(new PurgeQueueRequest(url)));
+	}
 
 	@Test
 	void messageMapping_singleMessageOnQueue_messageReceived() throws Exception {
@@ -170,7 +182,7 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		this.queueMessagingTemplate.convertAndSend("ManualDeletionQueue", "Message");
 
 		// Assert
-		await().until(() -> this.manualDeletionPolicyTestListener.getCountDownLatch().getCount() == 0);
+		await().atMost(Duration.ofSeconds(15)).until(() -> this.manualDeletionPolicyTestListener.getCountDownLatch().getCount() == 0);
 	}
 
 	public static class MessageListener {
@@ -220,7 +232,7 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		}
 
 		public List<String> getReceivedMessages() {
-			return this.receivedMessages;
+			return new ArrayList<>(this.receivedMessages);
 		}
 
 		public String getSenderId() {
@@ -266,7 +278,7 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		}
 
 		public List<String> getReceivedMessages() {
-			return this.receivedMessages;
+			return new ArrayList<>(this.receivedMessages);
 		}
 
 	}

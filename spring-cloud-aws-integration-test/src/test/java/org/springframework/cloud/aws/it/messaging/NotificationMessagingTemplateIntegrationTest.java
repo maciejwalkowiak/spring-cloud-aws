@@ -18,7 +18,6 @@ package org.springframework.cloud.aws.it.messaging;
 
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,6 +87,7 @@ public abstract class NotificationMessagingTemplateIntegrationTest
 
 		// Assert
 		await().atMost(Duration.ofMinutes(1)).untilAsserted(() -> {
+			assertThat(this.notificationReceiver.getMessage()).isNotNull();
 			assertThat(this.notificationReceiver.getMessage().getFirstName())
 				.isEqualTo("Agim");
 			assertThat(this.notificationReceiver.getMessage().getLastName())
