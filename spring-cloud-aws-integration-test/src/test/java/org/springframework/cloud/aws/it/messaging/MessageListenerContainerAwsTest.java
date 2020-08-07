@@ -79,8 +79,9 @@ abstract class MessageListenerContainerAwsTest extends AbstractContainerTest {
 	@Test
 	void listenToAllMessagesUntilTheyAreReceivedOrTimeOut() throws Exception {
 		await().atMost(Duration.ofMinutes(5)).untilAsserted(() -> {
-			assertThat(this.messageReceiver.getCountDownLatch().await(5, TimeUnit.MINUTES))
-				.isTrue();
+			assertThat(
+					this.messageReceiver.getCountDownLatch().await(5, TimeUnit.MINUTES))
+							.isTrue();
 		});
 	}
 

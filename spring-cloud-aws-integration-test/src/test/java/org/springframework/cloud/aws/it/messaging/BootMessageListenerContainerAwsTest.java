@@ -18,7 +18,6 @@ package org.springframework.cloud.aws.it.messaging;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.aws.messaging.config.SimpleMessageListenerContainerFactory;

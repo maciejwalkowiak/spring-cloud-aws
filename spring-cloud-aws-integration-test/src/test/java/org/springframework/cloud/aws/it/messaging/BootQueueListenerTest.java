@@ -18,7 +18,6 @@ package org.springframework.cloud.aws.it.messaging;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 
-import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.aws.core.env.ResourceIdResolver;

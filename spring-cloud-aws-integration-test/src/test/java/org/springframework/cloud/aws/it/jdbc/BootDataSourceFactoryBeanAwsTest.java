@@ -17,6 +17,7 @@
 package org.springframework.cloud.aws.it.jdbc;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,19 +37,20 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
 class BootDataSourceFactoryBeanAwsTest extends DataSourceFactoryBeanAwsTest {
 
-	@SpringBootApplication
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
-	static class BootDataSourceFactoryBeanAwsTestConfig {
-
-	}
-
 	@Autowired
 	private ApplicationContext applicationContext;
 
 	@Test
 	public void usesAutoConfiguration() {
-		assertThat(applicationContext.getBean(AmazonRdsDatabaseAutoConfiguration.class)).isNotNull();
+		assertThat(applicationContext.getBean(AmazonRdsDatabaseAutoConfiguration.class))
+				.isNotNull();
+	}
+
+	@SpringBootApplication
+	@PropertySource({ "classpath:Integration-test-config.properties",
+			"file://${els.config.dir}/access.properties" })
+	static class BootDataSourceFactoryBeanAwsTestConfig {
+
 	}
 
 }

@@ -18,7 +18,6 @@ package org.springframework.cloud.aws.it.messaging;
 
 import com.amazonaws.services.sns.AmazonSNS;
 
-import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.aws.core.env.ResourceIdResolver;

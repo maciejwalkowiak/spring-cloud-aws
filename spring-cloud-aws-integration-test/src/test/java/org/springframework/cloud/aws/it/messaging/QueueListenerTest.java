@@ -18,12 +18,14 @@ package org.springframework.cloud.aws.it.messaging;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -71,17 +73,6 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 	@Autowired
 	private ManualDeletionPolicyTestListener manualDeletionPolicyTestListener;
 
-	@Autowired
-	private AmazonSQS amazonSQS;
-
-	@Test
-	public void cleanUp() {
-		amazonSQS.listQueues()
-		.getQueueUrls()
-		.stream().filter(url -> url.contains("IntegrationTestStack"))
-		.forEach(url -> amazonSQS.purgeQueue(new PurgeQueueRequest(url)));
-	}
-
 	@Test
 	void messageMapping_singleMessageOnQueue_messageReceived() throws Exception {
 		// Arrange
@@ -94,8 +85,8 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 				MessageBuilder.withPayload(payload).build());
 
 		// Assert
-		await().atMost(Duration.ofSeconds(30))
-				.until(() -> this.messageListener.getReceivedMessages().contains(payload));
+		await().atMost(Duration.ofSeconds(30)).until(
+				() -> this.messageListener.getReceivedMessages().contains(payload));
 	}
 
 	@Test
@@ -109,8 +100,8 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		this.queueMessagingTemplate.convertAndSend("QueueListenerTest", payload);
 
 		// Assert
-		await().atMost(Duration.ofSeconds(15))
-				.until(() -> this.messageListener.getReceivedMessages().contains(payload));
+		await().atMost(Duration.ofSeconds(15)).until(
+				() -> this.messageListener.getReceivedMessages().contains(payload));
 	}
 
 	@Test
@@ -126,8 +117,11 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 
 		// Assert
 		await().atMost(Duration.ofSeconds(15)).untilAsserted(() -> {
-			assertThat(this.messageListenerWithSendTo.getReceivedMessages()).contains(payload);
-			assertThat(this.messageListener.getReceivedMessages()).contains(payload.toUpperCase()); // messageListenerWithSendTo converts to upper case
+			assertThat(this.messageListenerWithSendTo.getReceivedMessages())
+					.contains(payload);
+			assertThat(this.messageListener.getReceivedMessages())
+					.contains(payload.toUpperCase()); // messageListenerWithSendTo
+														// converts to upper case
 		});
 	}
 
@@ -153,11 +147,11 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 			assertThat(this.messageListener.getSenderId()).isNotNull();
 			assertThat(this.messageListener.getAllHeaders()).isNotNull();
 			assertThat(this.messageListener.getAllHeaders().get("stringHeader"))
-				.isEqualTo(stringValue);
+					.isEqualTo(stringValue);
 			assertThat(this.messageListener.getAllHeaders().get("numberHeader"))
-				.isEqualTo(numberValue);
+					.isEqualTo(numberValue);
 			assertThat(this.messageListener.getAllHeaders().get("binaryHeader"))
-				.isEqualTo(binaryValue);
+					.isEqualTo(binaryValue);
 		});
 	}
 
@@ -182,7 +176,13 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		this.queueMessagingTemplate.convertAndSend("ManualDeletionQueue", "Message");
 
 		// Assert
-		await().atMost(Duration.ofSeconds(15)).until(() -> this.manualDeletionPolicyTestListener.getCountDownLatch().getCount() == 0);
+		await().atMost(Duration.ofSeconds(15))
+				.until(() -> this.manualDeletionPolicyTestListener.getCountDownLatch()
+						.getCount() == 0);
+	}
+
+	private static String randomString() {
+		return UUID.randomUUID().toString();
 	}
 
 	public static class MessageListener {
@@ -328,10 +328,6 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 			return this.countDownLatch;
 		}
 
-	}
-
-	private static String randomString() {
-		return UUID.randomUUID().toString();
 	}
 
 }

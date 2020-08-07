@@ -19,21 +19,30 @@ package org.springframework.cloud.aws.it.support.profile;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
+
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
+ * JUnit 5 condition that enables only tests when Spring profile
+ * `amazon-webservice-region-available` is active.
+ *
  * @author Maciej Walkowiak
  */
 public class IfAmazonWebserviceEnvironmentCondition implements ExecutionCondition {
+
 	@Override
-	public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+	public ConditionEvaluationResult evaluateExecutionCondition(
+			ExtensionContext context) {
 		Environment env = SpringExtension.getApplicationContext(context).getEnvironment();
 		if (env.acceptsProfiles(Profiles.of("amazon-webservice-region-available"))) {
 			return ConditionEvaluationResult.enabled(null);
-		} else {
-			return ConditionEvaluationResult.disabled("profile 'amazon-webservice-region-available' not enabled");
+		}
+		else {
+			return ConditionEvaluationResult
+					.disabled("profile 'amazon-webservice-region-available' not enabled");
 		}
 	}
+
 }

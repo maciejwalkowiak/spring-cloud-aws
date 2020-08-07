@@ -65,10 +65,11 @@ public abstract class NotificationMessagingTemplateIntegrationTest
 
 		// Assert
 		await().atMost(Duration.ofMinutes(1)).untilAsserted(() -> {
+			assertThat(this.notificationReceiver.getMessage()).isNotNull();
 			assertThat(this.notificationReceiver.getMessage().getFirstName())
-				.isEqualTo("Agim");
+					.isEqualTo("Agim");
 			assertThat(this.notificationReceiver.getMessage().getLastName())
-				.isEqualTo("Emruli");
+					.isEqualTo("Emruli");
 			assertThat(this.notificationReceiver.getSubject()).isEqualTo(subject);
 		});
 	}
@@ -89,9 +90,9 @@ public abstract class NotificationMessagingTemplateIntegrationTest
 		await().atMost(Duration.ofMinutes(1)).untilAsserted(() -> {
 			assertThat(this.notificationReceiver.getMessage()).isNotNull();
 			assertThat(this.notificationReceiver.getMessage().getFirstName())
-				.isEqualTo("Agim");
+					.isEqualTo("Agim");
 			assertThat(this.notificationReceiver.getMessage().getLastName())
-				.isEqualTo("Emruli");
+					.isEqualTo("Emruli");
 			assertThat(this.notificationReceiver.getSubject()).isEqualTo(subject);
 		});
 	}

@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.aws.it.mail;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
