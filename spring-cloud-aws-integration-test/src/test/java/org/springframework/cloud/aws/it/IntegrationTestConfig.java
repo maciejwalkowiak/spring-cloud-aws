@@ -33,10 +33,10 @@ import org.springframework.core.annotation.Order;
  * @author Agim Emruli
  */
 @Configuration
-@EnableContextCredentials(accessKey = "${aws-integration-tests.accessKey}",
-		secretKey = "${aws-integration-tests.secretKey}")
+@EnableContextCredentials(accessKey = "${cloud.aws.credentials.access-key}",
+		secretKey = "${cloud.aws.credentials.secret-key}")
 @EnableStackConfiguration(stackName = "IntegrationTestStack")
-@PropertySource("file://${els.config.dir}/access.properties")
+@PropertySource("classpath:application.properties")
 @EnableContextRegion(region = "eu-west-1")
 @Order(1)
 public class IntegrationTestConfig {

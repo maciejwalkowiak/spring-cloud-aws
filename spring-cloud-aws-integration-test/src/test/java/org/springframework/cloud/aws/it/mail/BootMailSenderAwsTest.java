@@ -16,39 +16,17 @@
 
 package org.springframework.cloud.aws.it.mail;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.io.Resource;
 
 /**
  * @author Agim Emruli
  */
-@SpringBootTest(classes = BootMailSenderAwsTest.BootMailSenderAwsTestConfig.class,
-		properties = {
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+@SpringBootTest(classes = BootMailSenderAwsTest.BootMailSenderAwsTestConfig.class)
 class BootMailSenderAwsTest extends MailSenderAwsTest {
 
 	@SpringBootApplication
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties",
-			"file://${els.config.dir}/mail.properties" })
 	static class BootMailSenderAwsTestConfig {
-
-		@Value("file://${els.config.dir}/mail.properties")
-		private Resource mailConfigResource;
-
-		@Bean(name = "mail")
-		public PropertiesFactoryBean mail() {
-			PropertiesFactoryBean factoryBean = new PropertiesFactoryBean();
-			factoryBean.setLocation(this.mailConfigResource);
-			return factoryBean;
-		}
-
 	}
 
 }

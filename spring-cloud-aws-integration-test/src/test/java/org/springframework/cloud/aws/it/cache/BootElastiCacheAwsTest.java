@@ -18,20 +18,14 @@ package org.springframework.cloud.aws.it.cache;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author Agim Emruli
  */
-@SpringBootTest(classes = BootElastiCacheAwsTest.BootElastiCacheAwsTestConfig.class,
-		properties = {
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+@SpringBootTest(classes = BootElastiCacheAwsTest.BootElastiCacheAwsTestConfig.class)
 class BootElastiCacheAwsTest extends ElastiCacheAwsTest {
 
 	@SpringBootApplication
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
 	static class BootElastiCacheAwsTestConfig {
 
 	}

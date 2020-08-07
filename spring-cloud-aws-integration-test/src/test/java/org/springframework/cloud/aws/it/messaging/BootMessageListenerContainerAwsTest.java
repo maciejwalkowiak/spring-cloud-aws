@@ -23,24 +23,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.aws.messaging.config.SimpleMessageListenerContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * @author Alain Sahli
  */
-@SpringBootTest(
-		classes = BootMessageListenerContainerAwsTest.MessageListenerContainerAwsTestConfiguration.class,
-		properties = {
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+@SpringBootTest(classes = BootMessageListenerContainerAwsTest.MessageListenerContainerAwsTestConfiguration.class)
 class BootMessageListenerContainerAwsTest extends MessageListenerContainerAwsTest {
 
 	@Configuration
 	@EnableAutoConfiguration
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
 	protected static class MessageListenerContainerAwsTestConfiguration {
 
 		@Bean

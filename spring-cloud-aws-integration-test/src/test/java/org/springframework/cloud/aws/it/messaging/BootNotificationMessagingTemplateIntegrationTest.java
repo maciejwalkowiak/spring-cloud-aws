@@ -24,23 +24,17 @@ import org.springframework.cloud.aws.core.env.ResourceIdResolver;
 import org.springframework.cloud.aws.messaging.core.NotificationMessagingTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author Alain Sahli
  */
 @SpringBootTest(
-		classes = BootNotificationMessagingTemplateIntegrationTest.NotificationMessagingTemplateIntegrationTestConfiguration.class,
-		properties = {
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+		classes = BootNotificationMessagingTemplateIntegrationTest.NotificationMessagingTemplateIntegrationTestConfiguration.class)
 class BootNotificationMessagingTemplateIntegrationTest
 		extends NotificationMessagingTemplateIntegrationTest {
 
 	@Configuration
 	@EnableAutoConfiguration
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
 	protected static class NotificationMessagingTemplateIntegrationTestConfiguration {
 
 		@Bean

@@ -25,23 +25,17 @@ import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.cloud.aws.messaging.support.converter.ObjectMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author Alain Sahli
  */
 @SpringBootTest(
-		classes = BootQueueMessagingTemplateIntegrationTest.QueueMessagingTemplateIntegrationTestConfiguration.class,
-		properties = {
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+		classes = BootQueueMessagingTemplateIntegrationTest.QueueMessagingTemplateIntegrationTestConfiguration.class)
 class BootQueueMessagingTemplateIntegrationTest
 		extends QueueMessagingTemplateIntegrationTest {
 
 	@Configuration
 	@EnableAutoConfiguration
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
 	protected static class QueueMessagingTemplateIntegrationTestConfiguration {
 
 		@Bean

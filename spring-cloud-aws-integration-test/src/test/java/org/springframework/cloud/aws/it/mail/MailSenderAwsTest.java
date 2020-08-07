@@ -55,10 +55,10 @@ abstract class MailSenderAwsTest {
 	@Autowired
 	private JavaMailSender javaMailSender;
 
-	@Value("#{mail.senderAddress}")
+	@Value("${senderAddress}")
 	private String senderAddress;
 
-	@Value("#{mail.recipientAddress}")
+	@Value("${recipientAddress}")
 	private String recipientAddress;
 
 	@Test

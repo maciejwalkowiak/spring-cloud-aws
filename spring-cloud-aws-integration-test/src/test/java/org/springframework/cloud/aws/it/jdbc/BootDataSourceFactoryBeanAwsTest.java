@@ -23,7 +23,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.aws.autoconfigure.jdbc.AmazonRdsDatabaseAutoConfiguration;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.PropertySource;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -31,10 +30,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  * @author Agim Emruli
  */
 @SpringBootTest(
-		classes = BootDataSourceFactoryBeanAwsTest.BootDataSourceFactoryBeanAwsTestConfig.class,
-		properties = {
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+		classes = BootDataSourceFactoryBeanAwsTest.BootDataSourceFactoryBeanAwsTestConfig.class)
 class BootDataSourceFactoryBeanAwsTest extends DataSourceFactoryBeanAwsTest {
 
 	@Autowired
@@ -47,8 +43,6 @@ class BootDataSourceFactoryBeanAwsTest extends DataSourceFactoryBeanAwsTest {
 	}
 
 	@SpringBootApplication
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
 	static class BootDataSourceFactoryBeanAwsTestConfig {
 
 	}

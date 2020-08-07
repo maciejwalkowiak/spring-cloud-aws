@@ -18,24 +18,16 @@ package org.springframework.cloud.aws.it.context.support.io;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.aws.it.IntegrationTestConfig;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author Agim Emruli
  */
 @SpringBootTest(classes = BootResourceLoaderAwsTest.BootResourceLoaderAwsTestConfig.class,
 		properties = { "cloud.aws.loader.corePoolSize=10",
-				"cloud.aws.loader.queueCapacity=0",
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+				"cloud.aws.loader.queueCapacity=0"})
 class BootResourceLoaderAwsTest extends ResourceLoaderAwsTest {
 
 	@SpringBootApplication
-	@Import(IntegrationTestConfig.class)
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
 	static class BootResourceLoaderAwsTestConfig {
 
 	}

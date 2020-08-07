@@ -18,24 +18,15 @@ package org.springframework.cloud.aws.it.context.support.io;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.aws.it.IntegrationTestConfig;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author Agim Emruli
  */
 @SpringBootTest(
-		classes = BootPathMatchingResourceLoaderAwsTest.BootPathMatchingResourceLoaderAwsTestConfig.class,
-		properties = {
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+		classes = BootPathMatchingResourceLoaderAwsTest.BootPathMatchingResourceLoaderAwsTestConfig.class)
 class BootPathMatchingResourceLoaderAwsTest extends PathMatchingResourceLoaderAwsTest {
 
 	@SpringBootApplication
-	@Import(IntegrationTestConfig.class)
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
 	static class BootPathMatchingResourceLoaderAwsTestConfig {
 
 	}

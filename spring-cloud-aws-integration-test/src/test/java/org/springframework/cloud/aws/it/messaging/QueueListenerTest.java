@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -166,10 +167,10 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		this.queueMessagingTemplate.convertAndSend("QueueWithRedrivePolicy", "Hello");
 
 		// Assert
-		await().until(() -> countDownLatch.getCount() == 0);
+		await().atMost(Duration.ofSeconds(30)).until(() -> countDownLatch.getCount() == 0);
 	}
 
-	@Test
+	@RepeatedTest(10) // just to make sure that it does not fail
 	void manualDeletion_withAcknowledgmentCalled_shouldSucceedAndDeleteMessage()
 			throws Exception {
 		// Act

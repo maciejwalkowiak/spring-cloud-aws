@@ -26,28 +26,23 @@ import org.springframework.cloud.aws.messaging.config.SimpleMessageListenerConta
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author Alain Sahli
  */
-@SpringBootTest(classes = BootQueueListenerTest.QueueListenerTestConfiguration.class,
-		properties = {
-				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
-				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
+@SpringBootTest(classes = BootQueueListenerTest.QueueListenerTestConfiguration.class)
 class BootQueueListenerTest extends QueueListenerTest {
 
 	@Configuration
 	@EnableAutoConfiguration
-	@PropertySource({ "classpath:Integration-test-config.properties",
-			"file://${els.config.dir}/access.properties" })
 	protected static class QueueListenerTestConfiguration {
 
 		@Bean
 		public SimpleMessageListenerContainerFactory simpleMessageListenerContainerFactory() {
 			SimpleMessageListenerContainerFactory factory = new SimpleMessageListenerContainerFactory();
 			factory.setVisibilityTimeout(5);
-			factory.setQueueStopTimeout(100L);
+			factory.setQueueStopTimeout(1000L);
+			factory.setWaitTimeOut(1);
 			return factory;
 		}
 
