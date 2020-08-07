@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.aws.it.mail;
 
-import org.junit.jupiter.api.Disabled;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,7 +31,6 @@ import org.springframework.core.io.Resource;
 		properties = {
 				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
 				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
-@Disabled // FIXME: test is failing
 class BootMailSenderAwsTest extends MailSenderAwsTest {
 
 	@SpringBootApplication
