@@ -45,7 +45,7 @@ class JavaQueueListenerTest extends QueueListenerTest {
 		public SimpleMessageListenerContainerFactory simpleMessageListenerContainerFactory() {
 			SimpleMessageListenerContainerFactory factory = new SimpleMessageListenerContainerFactory();
 			factory.setVisibilityTimeout(5);
-
+			factory.setQueueStopTimeout(100L);
 			return factory;
 		}
 

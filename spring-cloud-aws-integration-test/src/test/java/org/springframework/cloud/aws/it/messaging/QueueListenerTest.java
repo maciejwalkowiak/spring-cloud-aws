@@ -17,10 +17,8 @@
 package org.springframework.cloud.aws.it.messaging;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +43,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * @author Agim Emruli
@@ -76,16 +75,15 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		// Arrange
 		this.messageListener.setCountDownLatch(new CountDownLatch(1));
 		this.messageListener.getReceivedMessages().clear();
+		String payload = randomString();
 
 		// Act
 		this.queueMessagingTemplate.send("QueueListenerTest",
-				MessageBuilder.withPayload("Hello world!").build());
+				MessageBuilder.withPayload(payload).build());
 
 		// Assert
-		assertThat(this.messageListener.getCountDownLatch().await(15, TimeUnit.SECONDS))
-				.isTrue();
-		assertThat(this.messageListener.getReceivedMessages().get(0))
-				.isEqualTo("Hello world!");
+		await().atMost(Duration.ofSeconds(30))
+				.until(() -> this.messageListener.getReceivedMessages().contains(payload));
 	}
 
 	@Test
@@ -93,15 +91,14 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		// Arrange
 		this.messageListener.setCountDownLatch(new CountDownLatch(1));
 		this.messageListener.getReceivedMessages().clear();
+		String payload = randomString();
 
 		// Act
-		this.queueMessagingTemplate.convertAndSend("QueueListenerTest", "Hello world!");
+		this.queueMessagingTemplate.convertAndSend("QueueListenerTest", payload);
 
 		// Assert
-		assertThat(this.messageListener.getCountDownLatch().await(15, TimeUnit.SECONDS))
-				.isTrue();
-		assertThat(this.messageListener.getReceivedMessages().get(0))
-				.isEqualTo("Hello world!");
+		await().atMost(Duration.ofSeconds(15))
+				.until(() -> this.messageListener.getReceivedMessages().contains(payload));
 	}
 
 	@Test
@@ -110,17 +107,16 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		this.messageListener.setCountDownLatch(new CountDownLatch(1));
 		this.messageListener.getReceivedMessages().clear();
 		this.messageListenerWithSendTo.getReceivedMessages().clear();
+		String payload = randomString();
 
 		// Act
-		this.queueMessagingTemplate.convertAndSend("SendToQueue", "Please answer!");
+		this.queueMessagingTemplate.convertAndSend("SendToQueue", payload);
 
 		// Assert
-		assertThat(this.messageListener.getCountDownLatch().await(15, TimeUnit.SECONDS))
-				.isTrue();
-		assertThat(this.messageListenerWithSendTo.getReceivedMessages().get(0))
-				.isEqualTo("Please answer!");
-		assertThat(this.messageListener.getReceivedMessages().get(0))
-				.isEqualTo("PLEASE ANSWER!");
+		await().atMost(Duration.ofSeconds(15)).untilAsserted(() -> {
+			assertThat(this.messageListenerWithSendTo.getReceivedMessages()).contains(payload);
+			assertThat(this.messageListener.getReceivedMessages()).contains(payload.toUpperCase()); // messageListenerWithSendTo converts to upper case
+		});
 	}
 
 	@Test
@@ -141,16 +137,16 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 						.setHeader("binaryHeader", binaryValue).build());
 
 		// Assert
-		assertThat(this.messageListener.getCountDownLatch().await(15, TimeUnit.SECONDS))
-				.isTrue();
-		assertThat(this.messageListener.getSenderId()).isNotNull();
-		assertThat(this.messageListener.getAllHeaders()).isNotNull();
-		assertThat(this.messageListener.getAllHeaders().get("stringHeader"))
+		await().atMost(Duration.ofSeconds(15)).untilAsserted(() -> {
+			assertThat(this.messageListener.getSenderId()).isNotNull();
+			assertThat(this.messageListener.getAllHeaders()).isNotNull();
+			assertThat(this.messageListener.getAllHeaders().get("stringHeader"))
 				.isEqualTo(stringValue);
-		assertThat(this.messageListener.getAllHeaders().get("numberHeader"))
+			assertThat(this.messageListener.getAllHeaders().get("numberHeader"))
 				.isEqualTo(numberValue);
-		assertThat(this.messageListener.getAllHeaders().get("binaryHeader"))
+			assertThat(this.messageListener.getAllHeaders().get("binaryHeader"))
 				.isEqualTo(binaryValue);
+		});
 	}
 
 	@Test
@@ -164,7 +160,7 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		this.queueMessagingTemplate.convertAndSend("QueueWithRedrivePolicy", "Hello");
 
 		// Assert
-		assertThat(countDownLatch.await(15, TimeUnit.SECONDS)).isTrue();
+		await().until(() -> countDownLatch.getCount() == 0);
 	}
 
 	@Test
@@ -174,8 +170,7 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		this.queueMessagingTemplate.convertAndSend("ManualDeletionQueue", "Message");
 
 		// Assert
-		assertThat(this.manualDeletionPolicyTestListener.getCountDownLatch().await(15,
-				TimeUnit.SECONDS)).isTrue();
+		await().until(() -> this.manualDeletionPolicyTestListener.getCountDownLatch().getCount() == 0);
 	}
 
 	public static class MessageListener {
@@ -321,6 +316,10 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 			return this.countDownLatch;
 		}
 
+	}
+
+	private static String randomString() {
+		return UUID.randomUUID().toString();
 	}
 
 }

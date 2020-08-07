@@ -36,7 +36,6 @@ import org.springframework.context.annotation.PropertySource;
 		properties = {
 				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
 				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
-@Disabled // FIXME: test is failing
 class BootQueueListenerTest extends QueueListenerTest {
 
 	@Configuration
@@ -49,7 +48,7 @@ class BootQueueListenerTest extends QueueListenerTest {
 		public SimpleMessageListenerContainerFactory simpleMessageListenerContainerFactory() {
 			SimpleMessageListenerContainerFactory factory = new SimpleMessageListenerContainerFactory();
 			factory.setVisibilityTimeout(5);
-
+			factory.setQueueStopTimeout(100L);
 			return factory;
 		}
 

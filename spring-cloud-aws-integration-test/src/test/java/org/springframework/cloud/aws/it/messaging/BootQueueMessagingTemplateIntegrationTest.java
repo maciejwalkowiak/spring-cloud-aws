@@ -36,7 +36,6 @@ import org.springframework.context.annotation.PropertySource;
 		properties = {
 				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
 				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
-@Disabled // FIXME: tests are failing
 class BootQueueMessagingTemplateIntegrationTest
 		extends QueueMessagingTemplateIntegrationTest {
 

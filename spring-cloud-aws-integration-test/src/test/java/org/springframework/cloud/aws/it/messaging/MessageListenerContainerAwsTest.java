@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.aws.it.messaging;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -37,6 +38,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @ExtendWith(SpringExtension.class)
 abstract class MessageListenerContainerAwsTest extends AbstractContainerTest {
@@ -76,8 +78,10 @@ abstract class MessageListenerContainerAwsTest extends AbstractContainerTest {
 
 	@Test
 	void listenToAllMessagesUntilTheyAreReceivedOrTimeOut() throws Exception {
-		assertThat(this.messageReceiver.getCountDownLatch().await(5, TimeUnit.MINUTES))
+		await().atMost(Duration.ofMinutes(5)).untilAsserted(() -> {
+			assertThat(this.messageReceiver.getCountDownLatch().await(5, TimeUnit.MINUTES))
 				.isTrue();
+		});
 	}
 
 	static class MessageReceiver {

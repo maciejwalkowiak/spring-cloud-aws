@@ -44,7 +44,7 @@ class JavaMessageListenerContainerAwsTest extends MessageListenerContainerAwsTes
 		public SimpleMessageListenerContainerFactory simpleMessageListenerContainerFactory() {
 			SimpleMessageListenerContainerFactory simpleMessageListenerContainerFactory = new SimpleMessageListenerContainerFactory();
 			simpleMessageListenerContainerFactory.setTaskExecutor(taskExecutor());
-
+			simpleMessageListenerContainerFactory.setQueueStopTimeout(100L);
 			return simpleMessageListenerContainerFactory;
 		}
 

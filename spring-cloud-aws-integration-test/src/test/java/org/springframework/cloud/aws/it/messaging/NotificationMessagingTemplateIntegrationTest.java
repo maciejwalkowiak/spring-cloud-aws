@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.aws.it.messaging;
 
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +33,7 @@ import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * @author Alain Sahli
@@ -63,12 +65,13 @@ public abstract class NotificationMessagingTemplateIntegrationTest
 				new TestPerson("Agim", "Emruli"), subject);
 
 		// Assert
-		assertThat(countDownLatch.await(60, TimeUnit.SECONDS)).isTrue();
-		assertThat(this.notificationReceiver.getMessage().getFirstName())
+		await().atMost(Duration.ofMinutes(1)).untilAsserted(() -> {
+			assertThat(this.notificationReceiver.getMessage().getFirstName())
 				.isEqualTo("Agim");
-		assertThat(this.notificationReceiver.getMessage().getLastName())
+			assertThat(this.notificationReceiver.getMessage().getLastName())
 				.isEqualTo("Emruli");
-		assertThat(this.notificationReceiver.getSubject()).isEqualTo(subject);
+			assertThat(this.notificationReceiver.getSubject()).isEqualTo(subject);
+		});
 	}
 
 	@Test
@@ -84,12 +87,13 @@ public abstract class NotificationMessagingTemplateIntegrationTest
 				.sendNotification(new TestPerson("Agim", "Emruli"), subject);
 
 		// Assert
-		assertThat(countDownLatch.await(60, TimeUnit.SECONDS)).isTrue();
-		assertThat(this.notificationReceiver.getMessage().getFirstName())
+		await().atMost(Duration.ofMinutes(1)).untilAsserted(() -> {
+			assertThat(this.notificationReceiver.getMessage().getFirstName())
 				.isEqualTo("Agim");
-		assertThat(this.notificationReceiver.getMessage().getLastName())
+			assertThat(this.notificationReceiver.getMessage().getLastName())
 				.isEqualTo("Emruli");
-		assertThat(this.notificationReceiver.getSubject()).isEqualTo(subject);
+			assertThat(this.notificationReceiver.getSubject()).isEqualTo(subject);
+		});
 	}
 
 	@RuntimeUse

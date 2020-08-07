@@ -35,7 +35,6 @@ import org.springframework.context.annotation.PropertySource;
 		properties = {
 				"cloud.aws.credentials.access-key=${aws-integration-tests.accessKey}",
 				"cloud.aws.credentials.secret-key=${aws-integration-tests.secretKey}" })
-@Disabled // FIXME: test is failing
 class BootNotificationMessagingTemplateIntegrationTest
 		extends NotificationMessagingTemplateIntegrationTest {
 
