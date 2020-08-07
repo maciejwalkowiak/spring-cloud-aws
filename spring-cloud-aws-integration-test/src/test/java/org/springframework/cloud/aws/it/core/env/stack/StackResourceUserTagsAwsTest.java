@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.aws.it.core.env.stack;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -34,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration
 @AWSIntegration
+@Disabled("This functionality has been only implemented in XML configuration")
 public class StackResourceUserTagsAwsTest {
 
 	@Value("#{stackTags['tag1']}")
