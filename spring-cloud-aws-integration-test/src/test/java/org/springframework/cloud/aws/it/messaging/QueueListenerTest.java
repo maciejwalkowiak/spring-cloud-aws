@@ -167,7 +167,8 @@ abstract class QueueListenerTest extends AbstractContainerTest {
 		this.queueMessagingTemplate.convertAndSend("QueueWithRedrivePolicy", "Hello");
 
 		// Assert
-		await().atMost(Duration.ofSeconds(30)).until(() -> countDownLatch.getCount() == 0);
+		await().atMost(Duration.ofSeconds(30))
+				.until(() -> countDownLatch.getCount() == 0);
 	}
 
 	@RepeatedTest(10) // just to make sure that it does not fail

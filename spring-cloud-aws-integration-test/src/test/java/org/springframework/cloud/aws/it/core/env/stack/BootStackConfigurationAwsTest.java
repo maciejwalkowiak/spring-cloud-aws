@@ -22,7 +22,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 /**
  * @author Agim Emruli
  */
-@SpringBootTest(classes = BootStackConfigurationAwsTest.BootStackConfigurationAwsTestConfig.class)
+@SpringBootTest(
+		classes = BootStackConfigurationAwsTest.BootStackConfigurationAwsTestConfig.class)
 class BootStackConfigurationAwsTest extends StackConfigurationAwsTest {
 
 	@SpringBootApplication
