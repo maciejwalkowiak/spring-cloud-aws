@@ -18,6 +18,18 @@ jobs:
     if: ${{ github.event_name == 'push' || contains( github.event.pull_request.labels.*.name, 'run integration tests') }}
     steps:
       - uses: actions/checkout@v2
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-maven-dependencies
+        with:
+          path: target
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
       - uses: actions/setup-java@v1
         with:
           java-version: '8'
