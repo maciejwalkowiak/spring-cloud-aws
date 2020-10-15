@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.aws.core.io.s3;
 
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -65,19 +66,17 @@ public final class AmazonS3ProxyFactory {
 
 			Advised advised = (Advised) amazonS3;
 			for (Advisor advisor : advised.getAdvisors()) {
-				if (ClassUtils.isAssignableValue(SimpleStorageRedirectInterceptor.class,
-						advisor.getAdvice())) {
+				if (ClassUtils.isAssignableValue(SimpleStorageRedirectInterceptor.class, advisor.getAdvice())) {
 					return amazonS3;
 				}
 			}
 
 			try {
-				advised.addAdvice(new SimpleStorageRedirectInterceptor(
-						(AmazonS3) advised.getTargetSource().getTarget()));
+				advised.addAdvice(
+						new SimpleStorageRedirectInterceptor((AmazonS3) advised.getTargetSource().getTarget()));
 			}
 			catch (Exception e) {
-				throw new RuntimeException(
-						"Error adding advice for class amazonS3 instance", e);
+				throw new RuntimeException("Error adding advice for class amazonS3 instance", e);
 			}
 
 			return amazonS3;
@@ -97,12 +96,12 @@ public final class AmazonS3ProxyFactory {
 	 *
 	 * @author Greg Turnquist
 	 * @author Agim Emruli
+	 * @author André Caron
 	 * @since 1.1
 	 */
 	static final class SimpleStorageRedirectInterceptor implements MethodInterceptor {
 
-		private static final Logger LOGGER = LoggerFactory
-				.getLogger(SimpleStorageRedirectInterceptor.class);
+		private static final Logger LOGGER = LoggerFactory.getLogger(SimpleStorageRedirectInterceptor.class);
 
 		private final AmazonS3 amazonS3;
 
@@ -120,10 +119,9 @@ public final class AmazonS3ProxyFactory {
 			}
 			catch (AmazonS3Exception e) {
 				if (301 == e.getStatusCode()) {
-					AmazonS3 redirectClient = buildAmazonS3ForRedirectLocation(
-							this.amazonS3, e);
-					return ReflectionUtils.invokeMethod(invocation.getMethod(),
-							redirectClient, invocation.getArguments());
+					AmazonS3 redirectClient = buildAmazonS3ForRedirectLocation(this.amazonS3, e);
+					return ReflectionUtils.invokeMethod(invocation.getMethod(), redirectClient,
+							invocation.getArguments());
 				}
 				else {
 					throw e;
@@ -131,11 +129,29 @@ public final class AmazonS3ProxyFactory {
 			}
 		}
 
-		private AmazonS3 buildAmazonS3ForRedirectLocation(AmazonS3 prototype,
-				AmazonS3Exception e) {
+		/**
+		 * Builds a new S3 client based on the information from the
+		 * {@link AmazonS3Exception}. Extracts from the exception's additional details the
+		 * region and endpoint of the bucket to be redirected to.
+		 *
+		 * Extracting the region from the exception is needed because the US S3 buckets
+		 * don't always return an endpoint that includes the region and
+		 * {@link AmazonS3ClientFactory} will default to us-west-2 if the hostname of the
+		 * endpoint is "s3.amazonaws.com". The us-east-1 bucket is quite likely to return
+		 * the "s3.amazonaws.com" endpoint.
+		 */
+		private AmazonS3 buildAmazonS3ForRedirectLocation(AmazonS3 prototype, AmazonS3Exception e) {
 			try {
+				Regions redirectRegion;
+				try {
+					redirectRegion = Regions.fromName(e.getAdditionalDetails().get("x-amz-bucket-region"));
+				}
+				catch (IllegalArgumentException iae) {
+					redirectRegion = null;
+				}
+
 				return this.amazonS3ClientFactory.createClientForEndpointUrl(prototype,
-						"https://" + e.getAdditionalDetails().get("Endpoint"));
+						"https://" + e.getAdditionalDetails().get("Endpoint"), redirectRegion);
 			}
 			catch (Exception ex) {
 				LOGGER.error("Error getting new Amazon S3 for redirect", ex);

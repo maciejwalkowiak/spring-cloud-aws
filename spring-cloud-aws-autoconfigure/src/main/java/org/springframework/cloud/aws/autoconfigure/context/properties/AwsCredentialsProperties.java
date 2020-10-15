@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.aws.autoconfigure.context.properties;
 
-import com.amazonaws.auth.profile.internal.AwsProfileNameLoader;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Properties related to AWS credentials.
@@ -25,7 +25,13 @@ import com.amazonaws.auth.profile.internal.AwsProfileNameLoader;
  * @since 2.0.2
  * @see org.springframework.cloud.aws.autoconfigure.context.ContextCredentialsAutoConfiguration
  */
+@ConfigurationProperties(prefix = AwsCredentialsProperties.PREFIX)
 public class AwsCredentialsProperties {
+
+	/**
+	 * The prefix used for AWS credentials related properties.
+	 */
+	public static final String PREFIX = "cloud.aws.credentials";
 
 	/**
 	 * The access key to be used with a static provider.
@@ -40,18 +46,12 @@ public class AwsCredentialsProperties {
 	/**
 	 * Configures an instance profile credentials provider with no further configuration.
 	 */
-	private boolean instanceProfile = true;
-
-	/**
-	 * Use the DefaultAWSCredentials Chain instead of configuring a custom credentials
-	 * chain.
-	 */
-	private boolean useDefaultAwsCredentialsChain;
+	private boolean instanceProfile = false;
 
 	/**
 	 * The AWS profile name.
 	 */
-	private String profileName = AwsProfileNameLoader.DEFAULT_PROFILE_NAME;
+	private String profileName;
 
 	/**
 	 * The AWS profile path.
@@ -80,14 +80,6 @@ public class AwsCredentialsProperties {
 
 	public void setInstanceProfile(boolean instanceProfile) {
 		this.instanceProfile = instanceProfile;
-	}
-
-	public boolean isUseDefaultAwsCredentialsChain() {
-		return this.useDefaultAwsCredentialsChain;
-	}
-
-	public void setUseDefaultAwsCredentialsChain(boolean useDefaultAwsCredentialsChain) {
-		this.useDefaultAwsCredentialsChain = useDefaultAwsCredentialsChain;
 	}
 
 	public String getProfileName() {

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,27 +19,26 @@ package org.springframework.cloud.aws.secretsmanager;
 import com.amazonaws.services.secretsmanager.AWSSecretsManager;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AwsSecretsManagerPropertySourceTest {
+class AwsSecretsManagerPropertySourceTest {
 
 	private AWSSecretsManager smClient = mock(AWSSecretsManager.class);
 
-	private AwsSecretsManagerPropertySource propertySource = new AwsSecretsManagerPropertySource(
-			"/config/myservice", smClient);
+	private AwsSecretsManagerPropertySource propertySource = new AwsSecretsManagerPropertySource("/config/myservice",
+			smClient);
 
 	@Test
-	public void shouldParseSecretValue() {
+	void shouldParseSecretValue() {
 		GetSecretValueResult secretValueResult = new GetSecretValueResult();
 		secretValueResult.setSecretString("{\"key1\": \"value1\", \"key2\": \"value2\"}");
 
-		when(smClient.getSecretValue(any(GetSecretValueRequest.class)))
-				.thenReturn(secretValueResult);
+		when(smClient.getSecretValue(any(GetSecretValueRequest.class))).thenReturn(secretValueResult);
 
 		propertySource.init();
 

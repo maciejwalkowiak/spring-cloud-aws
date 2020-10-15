@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,8 +26,7 @@ import org.springframework.util.ClassUtils;
  * @author Alain Sahli
  * @since 1.1
  */
-public class AcknowledgmentHandlerMethodArgumentResolver
-		implements HandlerMethodArgumentResolver {
+public class AcknowledgmentHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private final String acknowledgmentHeaderName;
 
@@ -37,18 +36,15 @@ public class AcknowledgmentHandlerMethodArgumentResolver
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return ClassUtils.isAssignable(Acknowledgment.class,
-				parameter.getParameterType());
+		return ClassUtils.isAssignable(Acknowledgment.class, parameter.getParameterType());
 	}
 
 	@Override
-	public Object resolveArgument(MethodParameter parameter, Message<?> message)
-			throws Exception {
+	public Object resolveArgument(MethodParameter parameter, Message<?> message) throws Exception {
 		if (!message.getHeaders().containsKey(this.acknowledgmentHeaderName)
 				|| message.getHeaders().get(this.acknowledgmentHeaderName) == null) {
 			throw new IllegalArgumentException(
-					"No acknowledgment object found for message header: '"
-							+ this.acknowledgmentHeaderName + "'");
+					"No acknowledgment object found for message header: '" + this.acknowledgmentHeaderName + "'");
 		}
 		return message.getHeaders().get(this.acknowledgmentHeaderName);
 	}

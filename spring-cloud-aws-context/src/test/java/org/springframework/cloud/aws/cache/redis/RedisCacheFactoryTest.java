@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.aws.cache.redis;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.DisposableBean;
@@ -25,20 +25,17 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RedisCacheFactoryTest {
+class RedisCacheFactoryTest {
 
 	@Test
-	public void createCache_withMockedRedisConnectionFactory_createsAndDestroysConnectionFactory()
-			throws Exception {
+	void createCache_withMockedRedisConnectionFactory_createsAndDestroysConnectionFactory() throws Exception {
 		// Arrange
-		RedisConnectionFactory connectionFactory = Mockito.mock(
-				RedisConnectionFactory.class,
+		RedisConnectionFactory connectionFactory = Mockito.mock(RedisConnectionFactory.class,
 				Mockito.withSettings().extraInterfaces(DisposableBean.class));
 		RedisCacheFactory redisCacheFactory = new RedisCacheFactory() {
 
 			@Override
-			protected RedisConnectionFactory createConnectionClient(String hostName,
-					int port) {
+			protected RedisConnectionFactory createConnectionClient(String hostName, int port) {
 				assertThat(hostName).isEqualTo("someHost");
 				assertThat(port).isEqualTo(4711);
 				return connectionFactory;

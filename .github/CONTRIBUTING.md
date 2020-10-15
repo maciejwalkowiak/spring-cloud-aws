@@ -24,11 +24,9 @@ unacceptable behavior to spring-code-of-conduct@pivotal.io.
 None of these is essential for a pull request, but they will all help.  They can also be
 added after the original pull request but before a merge.
 
-* Use the Spring Framework code format conventions. If you use Eclipse
-  you can import formatter settings using the
-  `eclipse-code-formatter.xml` file from the
-  [Spring Cloud Build](https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-dependencies-parent/eclipse-code-formatter.xml) project. If using IntelliJ, you can use the
-  [Eclipse Code Formatter Plugin](http://plugins.jetbrains.com/plugin/6546) to import the same file.
+* We use the [Spring JavaFormat](https://github.com/spring-io/spring-javaformat/) project
+  to apply code formatting conventions. Format de code running
+  `./mvnw io.spring.javaformat:spring-javaformat-maven-plugin:apply`
 * Make sure all new `.java` files to have a simple Javadoc class comment with at least an
   `@author` tag identifying you, and preferably at least a paragraph on what the class is
   for.
@@ -40,6 +38,6 @@ added after the original pull request but before a merge.
 * A few unit tests would help a lot as well -- someone has to do it.
 * If no-one else is using your branch, please rebase it against the current master (or
   other target branch in the main project).
-* When writing a commit message please follow [these conventions](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html),
+* When writing a commit message please follow [these conventions](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html),
   if you are fixing an existing issue please add `Fixes gh-XXXX` at the end of the commit
   message (where XXXX is the issue number).

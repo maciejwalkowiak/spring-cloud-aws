@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,8 +44,7 @@ public abstract class MapBasedDatabasePlatformSupport implements DatabasePlatfor
 	public String getDriverClassNameForDatabase(DatabaseType databaseType) {
 		Assert.notNull(databaseType, "databaseType must not be null");
 		String candidate = this.getDriverClassNameMappings().get(databaseType);
-		Assert.notNull(candidate, String.format(
-				"No driver class name found for database :'%s'", databaseType.name()));
+		Assert.notNull(candidate, String.format("No driver class name found for database :'%s'", databaseType.name()));
 		return candidate;
 	}
 
@@ -61,21 +60,17 @@ public abstract class MapBasedDatabasePlatformSupport implements DatabasePlatfor
 	 * type or if the information is not valid to construct a URL.
 	 */
 	@Override
-	public String getDatabaseUrlForDatabase(DatabaseType databaseType, String hostname,
-			int port, String databaseName) {
+	public String getDatabaseUrlForDatabase(DatabaseType databaseType, String hostname, int port, String databaseName) {
 		String scheme = this.getSchemeNames().get(databaseType);
 		String authenticationInfo = this.getAuthenticationInfo().get(databaseType);
-		Assert.notNull(databaseType, String
-				.format("No scheme name found for database :'%s'", databaseType.name()));
+		Assert.notNull(databaseType, String.format("No scheme name found for database :'%s'", databaseType.name()));
 		try {
-			return new URI(scheme, authenticationInfo, hostname, port,
-					databaseName != null ? "/" + databaseName : null, null, null)
-							.toString();
+			return new URI(scheme, authenticationInfo, hostname, port, databaseName != null ? "/" + databaseName : null,
+					null, null).toString();
 		}
 		catch (URISyntaxException e) {
-			throw new IllegalArgumentException(
-					"Error constructing URI from Host:'" + hostname + "' and port:'"
-							+ port + "' and database name:'" + databaseName + "'!");
+			throw new IllegalArgumentException("Error constructing URI from Host:'" + hostname + "' and port:'" + port
+					+ "' and database name:'" + databaseName + "'!");
 		}
 	}
 

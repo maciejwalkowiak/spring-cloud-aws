@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -58,7 +58,8 @@ abstract class AbstractMessageListenerContainer
 
 	private static final String RECEIVING_MESSAGE_ATTRIBUTES = "All";
 
-	private static final int DEFAULT_MAX_NUMBER_OF_MESSAGES = 10;
+	// Visible to child classes for thread pool sizing
+	protected static final int DEFAULT_MAX_NUMBER_OF_MESSAGES = 10;
 
 	private static final int DEFAULT_WAIT_TIME_IN_SECONDS = 20;
 
@@ -93,7 +94,7 @@ abstract class AbstractMessageListenerContainer
 	/**
 	 * By default sets the maximum value for long polling in SQS. For more information
 	 * read the <a href=
-	 * "http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html">documentation</a>
+	 * "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html">documentation</a>
 	 */
 	private Integer waitTimeOut = DEFAULT_WAIT_TIME_IN_SECONDS;
 
@@ -148,7 +149,7 @@ abstract class AbstractMessageListenerContainer
 
 	/**
 	 * Configures the destination resolver used to retrieve the queue url based on the
-	 * destination name configured for this instance. <br/>
+	 * destination name configured for this instance. <br>
 	 * This setter can be used when a custom configured {@link DestinationResolver} must
 	 * be provided. (For example if one want to have the
 	 * {@link DynamicQueueUrlDestinationResolver} with the auto creation of queues set to
@@ -281,16 +282,14 @@ abstract class AbstractMessageListenerContainer
 				}
 				else {
 					this.destinationResolver = new CachingDestinationResolverProxy<>(
-							new DynamicQueueUrlDestinationResolver(this.amazonSqs,
-									this.resourceIdResolver));
+							new DynamicQueueUrlDestinationResolver(this.amazonSqs, this.resourceIdResolver));
 				}
 			}
 
-			for (QueueMessageHandler.MappingInformation mappingInformation : this.messageHandler
-					.getHandlerMethods().keySet()) {
+			for (QueueMessageHandler.MappingInformation mappingInformation : this.messageHandler.getHandlerMethods()
+					.keySet()) {
 				for (String queue : mappingInformation.getLogicalResourceIds()) {
-					QueueAttributes queueAttributes = queueAttributes(queue,
-							mappingInformation.getDeletionPolicy());
+					QueueAttributes queueAttributes = queueAttributes(queue, mappingInformation.getDeletionPolicy());
 
 					if (queueAttributes != null) {
 						this.registeredQueues.put(queue, queueAttributes);
@@ -313,32 +312,28 @@ abstract class AbstractMessageListenerContainer
 		doStart();
 	}
 
-	private QueueAttributes queueAttributes(String queue,
-			SqsMessageDeletionPolicy deletionPolicy) {
+	private QueueAttributes queueAttributes(String queue, SqsMessageDeletionPolicy deletionPolicy) {
 		String destinationUrl;
 		try {
 			destinationUrl = getDestinationResolver().resolveDestination(queue);
 		}
 		catch (DestinationResolutionException e) {
 			if (getLogger().isDebugEnabled()) {
-				getLogger().debug(
-						"Ignoring queue with name '" + queue + "': " + e.getMessage(), e);
+				getLogger().debug("Ignoring queue with name '" + queue + "': " + e.getMessage(), e);
 			}
 			else {
-				getLogger().warn(
-						"Ignoring queue with name '" + queue + "': " + e.getMessage());
+				getLogger().warn("Ignoring queue with name '" + queue + "': " + e.getMessage());
 			}
 			return null;
 		}
 
-		GetQueueAttributesResult queueAttributes = getAmazonSqs()
-				.getQueueAttributes(new GetQueueAttributesRequest(destinationUrl)
-						.withAttributeNames(QueueAttributeName.RedrivePolicy));
+		GetQueueAttributesResult queueAttributes = getAmazonSqs().getQueueAttributes(
+				new GetQueueAttributesRequest(destinationUrl).withAttributeNames(QueueAttributeName.RedrivePolicy));
 		boolean hasRedrivePolicy = queueAttributes.getAttributes()
 				.containsKey(QueueAttributeName.RedrivePolicy.toString());
 
-		return new QueueAttributes(hasRedrivePolicy, deletionPolicy, destinationUrl,
-				getMaxNumberOfMessages(), getVisibilityTimeout(), getWaitTimeOut());
+		return new QueueAttributes(hasRedrivePolicy, deletionPolicy, destinationUrl, getMaxNumberOfMessages(),
+				getVisibilityTimeout(), getWaitTimeOut());
 	}
 
 	@Override
@@ -389,10 +384,8 @@ abstract class AbstractMessageListenerContainer
 
 		private final Integer waitTimeOut;
 
-		public QueueAttributes(boolean hasRedrivePolicy,
-				SqsMessageDeletionPolicy deletionPolicy, String destinationUrl,
-				Integer maxNumberOfMessages, Integer visibilityTimeout,
-				Integer waitTimeOut) {
+		public QueueAttributes(boolean hasRedrivePolicy, SqsMessageDeletionPolicy deletionPolicy, String destinationUrl,
+				Integer maxNumberOfMessages, Integer visibilityTimeout, Integer waitTimeOut) {
 			this.hasRedrivePolicy = hasRedrivePolicy;
 			this.deletionPolicy = deletionPolicy;
 			this.destinationUrl = destinationUrl;
@@ -406,16 +399,14 @@ abstract class AbstractMessageListenerContainer
 		}
 
 		public ReceiveMessageRequest getReceiveMessageRequest() {
-			ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(
-					this.destinationUrl).withAttributeNames(RECEIVING_ATTRIBUTES)
-							.withMessageAttributeNames(RECEIVING_MESSAGE_ATTRIBUTES);
+			ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(this.destinationUrl)
+					.withAttributeNames(RECEIVING_ATTRIBUTES).withMessageAttributeNames(RECEIVING_MESSAGE_ATTRIBUTES);
 
 			if (this.maxNumberOfMessages != null) {
 				receiveMessageRequest.withMaxNumberOfMessages(this.maxNumberOfMessages);
 			}
 			else {
-				receiveMessageRequest
-						.withMaxNumberOfMessages(DEFAULT_MAX_NUMBER_OF_MESSAGES);
+				receiveMessageRequest.withMaxNumberOfMessages(DEFAULT_MAX_NUMBER_OF_MESSAGES);
 			}
 
 			if (this.visibilityTimeout != null) {

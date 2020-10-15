@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,12 +19,12 @@ package org.springframework.cloud.aws.messaging.core.support;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import org.springframework.messaging.Message;
@@ -43,52 +43,43 @@ import static org.mockito.Mockito.when;
 /**
  * @author Alain Sahli
  */
-@RunWith(MockitoJUnitRunner.class)
-public class AbstractMessageChannelMessagingSendingTemplateTest {
+@ExtendWith(MockitoExtension.class)
+class AbstractMessageChannelMessagingSendingTemplateTest {
 
 	@Mock
 	private DestinationResolver<String> destinationResolver;
 
 	@SuppressWarnings("unchecked")
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		reset(this.destinationResolver);
 	}
 
 	@Test
-	public void send_WithDestinationNameAndMessage_shouldResolveTheDestinationAndSendTheMessage()
-			throws Exception {
+	void send_WithDestinationNameAndMessage_shouldResolveTheDestinationAndSendTheMessage() throws Exception {
 		// Arrange
-		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(
-				this.destinationResolver);
-		when(this.destinationResolver.resolveDestination("destination"))
-				.thenReturn("resolvedDestination");
+		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(this.destinationResolver);
+		when(this.destinationResolver.resolveDestination("destination")).thenReturn("resolvedDestination");
 
-		Map<String, Object> headers = Collections.singletonMap("headerKey",
-				"headerValue");
+		Map<String, Object> headers = Collections.singletonMap("headerKey", "headerValue");
 		String payload = "payload";
 
 		// Act
-		messageSendingTemplate.send("destination",
-				MessageBuilder.createMessage(payload, new MessageHeaders(headers)));
+		messageSendingTemplate.send("destination", MessageBuilder.createMessage(payload, new MessageHeaders(headers)));
 
 		// Assert
 		verify(this.destinationResolver).resolveDestination("destination");
-		assertThat(
-				messageSendingTemplate.getMessageChannel().getSentMessage().getPayload())
-						.isEqualTo(payload);
-		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage()
-				.getHeaders().get("headerKey")).isEqualTo(headers.get("headerKey"));
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getPayload()).isEqualTo(payload);
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getHeaders().get("headerKey"))
+				.isEqualTo(headers.get("headerKey"));
 	}
 
 	@Test
-	public void convertAndSend_WithDestinationNameAndPayload_shouldResolveTheDestinationAndSendTheConvertedMessage()
+	void convertAndSend_WithDestinationNameAndPayload_shouldResolveTheDestinationAndSendTheConvertedMessage()
 			throws Exception {
 		// Arrange
-		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(
-				this.destinationResolver);
-		when(this.destinationResolver.resolveDestination("destination"))
-				.thenReturn("resolvedDestination");
+		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(this.destinationResolver);
+		when(this.destinationResolver.resolveDestination("destination")).thenReturn("resolvedDestination");
 
 		String payload = "payload";
 
@@ -97,22 +88,17 @@ public class AbstractMessageChannelMessagingSendingTemplateTest {
 
 		// Assert
 		verify(this.destinationResolver).resolveDestination("destination");
-		assertThat(
-				messageSendingTemplate.getMessageChannel().getSentMessage().getPayload())
-						.isEqualTo(payload);
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getPayload()).isEqualTo(payload);
 	}
 
 	@Test
-	public void convertAndSend_WithDestinationNamePayloadAndHeaders_shouldResolveTheDestinationAndSendTheConvertedMessage()
+	void convertAndSend_WithDestinationNamePayloadAndHeaders_shouldResolveTheDestinationAndSendTheConvertedMessage()
 			throws Exception {
 		// Arrange
-		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(
-				this.destinationResolver);
-		when(this.destinationResolver.resolveDestination("destination"))
-				.thenReturn("resolvedDestination");
+		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(this.destinationResolver);
+		when(this.destinationResolver.resolveDestination("destination")).thenReturn("resolvedDestination");
 
-		Map<String, Object> headers = Collections.singletonMap("headerKey",
-				"headerValue");
+		Map<String, Object> headers = Collections.singletonMap("headerKey", "headerValue");
 		String payload = "payload";
 
 		// Act
@@ -120,101 +106,78 @@ public class AbstractMessageChannelMessagingSendingTemplateTest {
 
 		// Assert
 		verify(this.destinationResolver).resolveDestination("destination");
-		assertThat(
-				messageSendingTemplate.getMessageChannel().getSentMessage().getPayload())
-						.isEqualTo(payload);
-		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage()
-				.getHeaders().get("headerKey")).isEqualTo(headers.get("headerKey"));
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getPayload()).isEqualTo(payload);
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getHeaders().get("headerKey"))
+				.isEqualTo(headers.get("headerKey"));
 	}
 
 	// @checkstyle:off
 	@Test
-	public void convertAndSend_WithDestinationNamePayloadAndPostProcessor_shouldResolveTheDestinationSendTheConvertedMessageAndCallPostProcessor()
+	void convertAndSend_WithDestinationNamePayloadAndPostProcessor_shouldResolveTheDestinationSendTheConvertedMessageAndCallPostProcessor()
 			throws Exception {
 		// @checkstyle:on
 		// Arrange
-		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(
-				this.destinationResolver);
-		when(this.destinationResolver.resolveDestination("destination"))
-				.thenReturn("resolvedDestination");
+		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(this.destinationResolver);
+		when(this.destinationResolver.resolveDestination("destination")).thenReturn("resolvedDestination");
 		MessagePostProcessor messagePostProcessor = mock(MessagePostProcessor.class);
 		when(messagePostProcessor.postProcessMessage(ArgumentMatchers.any()))
-				.thenAnswer((Answer<Message<?>>) invocation -> (Message<?>) invocation
-						.getArguments()[0]);
+				.thenAnswer((Answer<Message<?>>) invocation -> (Message<?>) invocation.getArguments()[0]);
 
 		String payload = "payload";
 
 		// Act
-		messageSendingTemplate.convertAndSend("destination", payload,
-				messagePostProcessor);
+		messageSendingTemplate.convertAndSend("destination", payload, messagePostProcessor);
 
 		// Assert
 		verify(this.destinationResolver).resolveDestination("destination");
-		assertThat(
-				messageSendingTemplate.getMessageChannel().getSentMessage().getPayload())
-						.isEqualTo(payload);
-		verify(messagePostProcessor).postProcessMessage(
-				messageSendingTemplate.getMessageChannel().getSentMessage());
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getPayload()).isEqualTo(payload);
+		verify(messagePostProcessor).postProcessMessage(messageSendingTemplate.getMessageChannel().getSentMessage());
 	}
 
 	// @checkstyle:off
 	@Test
-	public void convertAndSend_WithDestinationNamePayloadHeadersAndPostProcessor_shouldResolveTheDestinationSendTheConvertedMessageAndCallPostProcessor()
+	void convertAndSend_WithDestinationNamePayloadHeadersAndPostProcessor_shouldResolveTheDestinationSendTheConvertedMessageAndCallPostProcessor()
 			// @checkstyle:on
 			throws Exception {
 		// Arrange
-		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(
-				this.destinationResolver);
-		when(this.destinationResolver.resolveDestination("destination"))
-				.thenReturn("resolvedDestination");
+		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(this.destinationResolver);
+		when(this.destinationResolver.resolveDestination("destination")).thenReturn("resolvedDestination");
 		MessagePostProcessor messagePostProcessor = mock(MessagePostProcessor.class);
 		when(messagePostProcessor.postProcessMessage(ArgumentMatchers.any()))
-				.thenAnswer((Answer<Message<?>>) invocation -> (Message<?>) invocation
-						.getArguments()[0]);
+				.thenAnswer((Answer<Message<?>>) invocation -> (Message<?>) invocation.getArguments()[0]);
 
-		Map<String, Object> headers = Collections.singletonMap("headerKey",
-				"headerValue");
+		Map<String, Object> headers = Collections.singletonMap("headerKey", "headerValue");
 		String payload = "payload";
 
 		// Act
-		messageSendingTemplate.convertAndSend("destination", payload, headers,
-				messagePostProcessor);
+		messageSendingTemplate.convertAndSend("destination", payload, headers, messagePostProcessor);
 
 		// Assert
 		verify(this.destinationResolver).resolveDestination("destination");
-		assertThat(
-				messageSendingTemplate.getMessageChannel().getSentMessage().getPayload())
-						.isEqualTo(payload);
-		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage()
-				.getHeaders().get("headerKey")).isEqualTo(headers.get("headerKey"));
-		verify(messagePostProcessor).postProcessMessage(
-				messageSendingTemplate.getMessageChannel().getSentMessage());
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getPayload()).isEqualTo(payload);
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getHeaders().get("headerKey"))
+				.isEqualTo(headers.get("headerKey"));
+		verify(messagePostProcessor).postProcessMessage(messageSendingTemplate.getMessageChannel().getSentMessage());
 	}
 
 	@Test
-	public void send_WithPayload_shouldUseDefaultDestination() throws Exception {
+	void send_WithPayload_shouldUseDefaultDestination() throws Exception {
 		// Arrange
-		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(
-				this.destinationResolver);
-		when(this.destinationResolver.resolveDestination("defaultDestination"))
-				.thenReturn("resolvedDestination");
+		MessageSendingTemplateTest messageSendingTemplate = new MessageSendingTemplateTest(this.destinationResolver);
+		when(this.destinationResolver.resolveDestination("defaultDestination")).thenReturn("resolvedDestination");
 		messageSendingTemplate.setDefaultDestinationName("defaultDestination");
 
-		Map<String, Object> headers = Collections.singletonMap("headerKey",
-				"headerValue");
+		Map<String, Object> headers = Collections.singletonMap("headerKey", "headerValue");
 		String payload = "payload";
 
 		// Act
-		messageSendingTemplate
-				.send(MessageBuilder.createMessage(payload, new MessageHeaders(headers)));
+		messageSendingTemplate.send(MessageBuilder.createMessage(payload, new MessageHeaders(headers)));
 
 		// Assert
 		verify(this.destinationResolver).resolveDestination("defaultDestination");
-		assertThat(
-				messageSendingTemplate.getMessageChannel().getSentMessage().getPayload())
-						.isEqualTo(payload);
-		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage()
-				.getHeaders().get("headerKey")).isEqualTo(headers.get("headerKey"));
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getPayload()).isEqualTo(payload);
+		assertThat(messageSendingTemplate.getMessageChannel().getSentMessage().getHeaders().get("headerKey"))
+				.isEqualTo(headers.get("headerKey"));
 
 	}
 
@@ -223,19 +186,17 @@ public class AbstractMessageChannelMessagingSendingTemplateTest {
 
 		private MessageChannelTest messageChannel;
 
-		protected MessageSendingTemplateTest(
-				DestinationResolver<String> destinationResolver) {
+		protected MessageSendingTemplateTest(DestinationResolver<String> destinationResolver) {
 			super(destinationResolver);
 		}
 
 		@Override
-		protected MessageChannel resolveMessageChannel(
-				String physicalResourceIdentifier) {
+		protected MessageChannel resolveMessageChannel(String physicalResourceIdentifier) {
 			this.messageChannel = new MessageChannelTest();
 			return this.messageChannel;
 		}
 
-		public MessageChannelTest getMessageChannel() {
+		MessageChannelTest getMessageChannel() {
 			return this.messageChannel;
 		}
 
@@ -257,7 +218,7 @@ public class AbstractMessageChannelMessagingSendingTemplateTest {
 			return false;
 		}
 
-		public Message<?> getSentMessage() {
+		Message<?> getSentMessage() {
 			return this.sentMessage;
 		}
 

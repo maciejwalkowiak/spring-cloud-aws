@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,36 +16,29 @@
 
 package org.springframework.cloud.aws.messaging.listener.support;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Szymon Dembek
  * @since 1.3
  */
-public class VisibilityHandlerMethodArgumentResolverTest {
-
-	@Rule
-	public final ExpectedException expectedException = ExpectedException.none();
+class VisibilityHandlerMethodArgumentResolverTest {
 
 	@Test
-	public void resolveArgument_messageWithNoVisibilityHeader_throwIllegalArgumentException()
-			throws Exception {
+	void resolveArgument_messageWithNoVisibilityHeader_throwIllegalArgumentException() throws Exception {
 		// Arrange
 		VisibilityHandlerMethodArgumentResolver visibilityHandlerMethodArgumentResolver;
-		visibilityHandlerMethodArgumentResolver = new VisibilityHandlerMethodArgumentResolver(
-				"Visibility");
+		visibilityHandlerMethodArgumentResolver = new VisibilityHandlerMethodArgumentResolver("Visibility");
 		Message<String> message = MessageBuilder.withPayload("no content").build();
 
-		this.expectedException.expect(IllegalArgumentException.class);
-		this.expectedException.expectMessage("Visibility");
-
-		// Act
-		visibilityHandlerMethodArgumentResolver.resolveArgument(null, message);
+		// Assert
+		assertThatThrownBy(() -> visibilityHandlerMethodArgumentResolver.resolveArgument(null, message))
+				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Visibility");
 	}
 
 }

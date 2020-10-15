@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,14 +47,11 @@ public class StaticDatabasePlatformSupport extends MapBasedDatabasePlatformSuppo
 		HashMap<DatabaseType, String> driverClassNameMappings = new HashMap<>();
 		driverClassNameMappings.put(DatabaseType.MYSQL, "com.mysql.jdbc.Driver");
 		driverClassNameMappings.put(DatabaseType.ORACLE, "oracle.jdbc.OracleDriver");
-		driverClassNameMappings.put(DatabaseType.SQLSERVER,
-				"net.sourceforge.jtds.jdbc.Driver");
+		driverClassNameMappings.put(DatabaseType.SQLSERVER, "net.sourceforge.jtds.jdbc.Driver");
 		driverClassNameMappings.put(DatabaseType.POSTGRES, "org.postgresql.Driver");
 		driverClassNameMappings.put(DatabaseType.MARIA, "org.mariadb.jdbc.Driver");
-		driverClassNameMappings.put(DatabaseType.AURORA_POSTGRESQL,
-				driverClassNameMappings.get(DatabaseType.POSTGRES));
-		driverClassNameMappings.put(DatabaseType.AURORA,
-				driverClassNameMappings.get(DatabaseType.MYSQL));
+		driverClassNameMappings.put(DatabaseType.AURORA_POSTGRESQL, driverClassNameMappings.get(DatabaseType.POSTGRES));
+		driverClassNameMappings.put(DatabaseType.AURORA, driverClassNameMappings.get(DatabaseType.MYSQL));
 		return Collections.unmodifiableMap(driverClassNameMappings);
 	}
 
@@ -62,14 +59,11 @@ public class StaticDatabasePlatformSupport extends MapBasedDatabasePlatformSuppo
 		HashMap<DatabaseType, String> schemeNamesMappings = new HashMap<>();
 		schemeNamesMappings.put(DatabaseType.MYSQL, JDBC_SCHEME_NAME + "mysql");
 		schemeNamesMappings.put(DatabaseType.ORACLE, JDBC_SCHEME_NAME + "oracle:thin");
-		schemeNamesMappings.put(DatabaseType.SQLSERVER,
-				JDBC_SCHEME_NAME + "jtds:sqlserver");
+		schemeNamesMappings.put(DatabaseType.SQLSERVER, JDBC_SCHEME_NAME + "jtds:sqlserver");
 		schemeNamesMappings.put(DatabaseType.POSTGRES, JDBC_SCHEME_NAME + "postgresql");
 		schemeNamesMappings.put(DatabaseType.MARIA, JDBC_SCHEME_NAME + "mariadb");
-		schemeNamesMappings.put(DatabaseType.AURORA_POSTGRESQL,
-				schemeNamesMappings.get(DatabaseType.POSTGRES));
-		schemeNamesMappings.put(DatabaseType.AURORA,
-				schemeNamesMappings.get(DatabaseType.MYSQL));
+		schemeNamesMappings.put(DatabaseType.AURORA_POSTGRESQL, schemeNamesMappings.get(DatabaseType.POSTGRES));
+		schemeNamesMappings.put(DatabaseType.AURORA, schemeNamesMappings.get(DatabaseType.MYSQL));
 		return Collections.unmodifiableMap(schemeNamesMappings);
 	}
 

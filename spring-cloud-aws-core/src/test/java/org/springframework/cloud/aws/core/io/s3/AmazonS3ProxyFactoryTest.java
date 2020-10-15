@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.Advised;
@@ -38,10 +38,10 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Greg Turnquist
  */
-public class AmazonS3ProxyFactoryTest {
+class AmazonS3ProxyFactoryTest {
 
 	@Test
-	public void verifyBasicAdvice() throws Exception {
+	void verifyBasicAdvice() throws Exception {
 
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 		assertThat(AopUtils.isAopProxy(amazonS3)).isFalse();
@@ -51,29 +51,28 @@ public class AmazonS3ProxyFactoryTest {
 
 		Advised advised = (Advised) proxy;
 		assertThat(advised.getAdvisors().length).isEqualTo(1);
-		assertThat(advised.getAdvisors()[0].getAdvice()).isInstanceOf(
-				AmazonS3ProxyFactory.SimpleStorageRedirectInterceptor.class);
+		assertThat(advised.getAdvisors()[0].getAdvice())
+				.isInstanceOf(AmazonS3ProxyFactory.SimpleStorageRedirectInterceptor.class);
 		assertThat(AopUtils.isAopProxy(advised.getTargetSource().getTarget())).isFalse();
 	}
 
 	@Test
-	public void verifyDoubleWrappingHandled() throws Exception {
+	void verifyDoubleWrappingHandled() throws Exception {
 
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 
-		AmazonS3 proxy = AmazonS3ProxyFactory
-				.createProxy(AmazonS3ProxyFactory.createProxy(amazonS3));
+		AmazonS3 proxy = AmazonS3ProxyFactory.createProxy(AmazonS3ProxyFactory.createProxy(amazonS3));
 		assertThat(AopUtils.isAopProxy(proxy)).isTrue();
 
 		Advised advised = (Advised) proxy;
 		assertThat(advised.getAdvisors().length).isEqualTo(1);
-		assertThat(advised.getAdvisors()[0].getAdvice()).isInstanceOf(
-				AmazonS3ProxyFactory.SimpleStorageRedirectInterceptor.class);
+		assertThat(advised.getAdvisors()[0].getAdvice())
+				.isInstanceOf(AmazonS3ProxyFactory.SimpleStorageRedirectInterceptor.class);
 		assertThat(AopUtils.isAopProxy(advised.getTargetSource().getTarget())).isFalse();
 	}
 
 	@Test
-	public void verifyPolymorphicHandling() {
+	void verifyPolymorphicHandling() {
 
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 		AmazonS3 proxy1 = AmazonS3ProxyFactory.createProxy(amazonS3);
@@ -81,8 +80,7 @@ public class AmazonS3ProxyFactoryTest {
 		assertThat(AmazonS3.class.isAssignableFrom(proxy1.getClass())).isTrue();
 		assertThat(AmazonS3Client.class.isAssignableFrom(proxy1.getClass())).isFalse();
 
-		AmazonS3 amazonS3Client = AmazonS3ClientBuilder.standard()
-				.withRegion(Regions.DEFAULT_REGION).build();
+		AmazonS3 amazonS3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
 		AmazonS3 proxy2 = AmazonS3ProxyFactory.createProxy(amazonS3Client);
 
 		assertThat(AmazonS3.class.isAssignableFrom(proxy2.getClass())).isTrue();
@@ -90,7 +88,7 @@ public class AmazonS3ProxyFactoryTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void verifyAddingRedirectAdviceToExistingProxy() {
+	void verifyAddingRedirectAdviceToExistingProxy() {
 
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 

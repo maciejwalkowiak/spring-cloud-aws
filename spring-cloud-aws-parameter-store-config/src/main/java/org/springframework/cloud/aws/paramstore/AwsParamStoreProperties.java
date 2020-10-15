@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,23 +16,23 @@
 
 package org.springframework.cloud.aws.paramstore;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import java.util.regex.Pattern;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 /**
  * Configuration properties for the AWS Parameter Store integration. Mostly based on the
  * Spring Cloud Consul Configuration equivalent.
  *
  * @author Joris Kuipers
+ * @author Matej Nedic
  * @since 2.0.0
  */
 @ConfigurationProperties(AwsParamStoreProperties.CONFIG_PREFIX)
-@Validated
-public class AwsParamStoreProperties {
+public class AwsParamStoreProperties implements Validator {
 
 	/**
 	 * Configuration prefix.
@@ -40,19 +40,30 @@ public class AwsParamStoreProperties {
 	public static final String CONFIG_PREFIX = "aws.paramstore";
 
 	/**
+	 * Pattern used for prefix validation.
+	 */
+	private static final Pattern PREFIX_PATTERN = Pattern.compile("(/[a-zA-Z0-9.\\-_]+)*");
+
+	/**
+	 * Pattern used for profileSeparator validation.
+	 */
+	private static final Pattern PROFILE_SEPARATOR_PATTERN = Pattern.compile("[a-zA-Z0-9.\\-_/\\\\]+");
+
+	/**
 	 * Prefix indicating first level for every property. Value must start with a forward
 	 * slash followed by a valid path segment or be empty. Defaults to "/config".
 	 */
-	@NotNull
-	@Pattern(regexp = "(/[a-zA-Z0-9.\\-_]+)*")
 	private String prefix = "/config";
 
-	@NotEmpty
 	private String defaultContext = "application";
 
-	@NotNull
-	@Pattern(regexp = "[a-zA-Z0-9.\\-_/]+")
 	private String profileSeparator = "_";
+
+	/**
+	 * If region value is not null or empty it will be used in creation of
+	 * AWSSimpleSystemsManagement.
+	 */
+	private String region;
 
 	/** Throw exceptions during config lookup if true, otherwise, log warnings. */
 	private boolean failFast = true;
@@ -65,6 +76,36 @@ public class AwsParamStoreProperties {
 
 	/** Is AWS Parameter Store support enabled. */
 	private boolean enabled = true;
+
+	@Override
+	public boolean supports(Class clazz) {
+		return AwsParamStoreProperties.class.isAssignableFrom(clazz);
+	}
+
+	@Override
+	public void validate(Object target, Errors errors) {
+		AwsParamStoreProperties properties = (AwsParamStoreProperties) target;
+
+		if (StringUtils.isEmpty(properties.getPrefix())) {
+			errors.rejectValue("prefix", "NotEmpty", "prefix should not be empty or null.");
+		}
+
+		if (StringUtils.isEmpty(properties.getDefaultContext())) {
+			errors.rejectValue("defaultContext", "NotEmpty", "defaultContext should not be empty or null.");
+		}
+
+		if (StringUtils.isEmpty(properties.getProfileSeparator())) {
+			errors.rejectValue("profileSeparator", "NotEmpty", "profileSeparator should not be empty or null.");
+		}
+
+		if (!PREFIX_PATTERN.matcher(properties.getPrefix()).matches()) {
+			errors.rejectValue("prefix", "Pattern", "The prefix must have pattern of:  " + PREFIX_PATTERN.toString());
+		}
+		if (!PROFILE_SEPARATOR_PATTERN.matcher(properties.getProfileSeparator()).matches()) {
+			errors.rejectValue("profileSeparator", "Pattern",
+					"The profileSeparator must have pattern of:  " + PROFILE_SEPARATOR_PATTERN.toString());
+		}
+	}
 
 	public String getPrefix() {
 		return prefix;
@@ -112,6 +153,14 @@ public class AwsParamStoreProperties {
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(final String region) {
+		this.region = region;
 	}
 
 }

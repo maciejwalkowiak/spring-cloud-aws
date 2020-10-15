@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,15 +40,15 @@ public class NotificationStatusHandlerMethodArgumentResolver
 	}
 
 	@Override
-	protected Object doResolveArgumentFromNotificationMessage(JsonNode content,
-			HttpInputMessage request, Class<?> parameterType) {
+	protected Object doResolveArgumentFromNotificationMessage(JsonNode content, HttpInputMessage request,
+			Class<?> parameterType) {
 		if (!"SubscriptionConfirmation".equals(content.get("Type").asText())
 				&& !"UnsubscribeConfirmation".equals(content.get("Type").asText())) {
 			throw new IllegalArgumentException(
 					"NotificationStatus is only available for subscription and unsubscription requests");
 		}
-		return new AmazonSnsNotificationStatus(this.amazonSns,
-				content.get("TopicArn").asText(), content.get("Token").asText());
+		return new AmazonSnsNotificationStatus(this.amazonSns, content.get("TopicArn").asText(),
+				content.get("Token").asText());
 	}
 
 	private static final class AmazonSnsNotificationStatus implements NotificationStatus {
@@ -59,8 +59,7 @@ public class NotificationStatusHandlerMethodArgumentResolver
 
 		private final String confirmationToken;
 
-		private AmazonSnsNotificationStatus(AmazonSNS amazonSns, String topicArn,
-				String confirmationToken) {
+		private AmazonSnsNotificationStatus(AmazonSNS amazonSns, String topicArn, String confirmationToken) {
 			this.amazonSns = amazonSns;
 			this.topicArn = topicArn;
 			this.confirmationToken = confirmationToken;

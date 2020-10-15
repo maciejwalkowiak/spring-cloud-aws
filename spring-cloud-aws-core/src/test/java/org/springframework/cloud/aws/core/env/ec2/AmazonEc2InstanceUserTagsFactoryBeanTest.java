@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@ import com.amazonaws.services.ec2.model.DescribeTagsResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.ResourceType;
 import com.amazonaws.services.ec2.model.TagDescription;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -34,11 +34,10 @@ import static org.mockito.Mockito.when;
 /**
  * @author Agim Emruli
  */
-public class AmazonEc2InstanceUserTagsFactoryBeanTest {
+class AmazonEc2InstanceUserTagsFactoryBeanTest {
 
 	@Test
-	public void getObject_userTagDataAvailable_objectContainsAllAvailableKeys()
-			throws Exception {
+	void getObject_userTagDataAvailable_objectContainsAllAvailableKeys() throws Exception {
 		// Arrange
 		AmazonEC2 amazonEC2 = mock(AmazonEC2.class);
 
@@ -50,10 +49,8 @@ public class AmazonEc2InstanceUserTagsFactoryBeanTest {
 				new Filter("resource-type", Collections.singletonList("instance")));
 
 		DescribeTagsResult describeTagsResult = new DescribeTagsResult().withTags(
-				new TagDescription().withKey("keyA")
-						.withResourceType(ResourceType.Instance).withValue("valueA"),
-				new TagDescription().withKey("keyB")
-						.withResourceType(ResourceType.Instance).withValue("valueB"));
+				new TagDescription().withKey("keyA").withResourceType(ResourceType.Instance).withValue("valueA"),
+				new TagDescription().withKey("keyB").withResourceType(ResourceType.Instance).withValue("valueB"));
 
 		when(amazonEC2.describeTags(describeTagsRequest)).thenReturn(describeTagsResult);
 

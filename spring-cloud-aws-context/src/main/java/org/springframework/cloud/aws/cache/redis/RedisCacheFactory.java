@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,8 @@
  */
 
 package org.springframework.cloud.aws.cache.redis;
+
+import java.util.Map;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cache.Cache;
@@ -31,11 +33,18 @@ import org.springframework.util.ClassUtils;
  */
 public class RedisCacheFactory extends AbstractCacheFactory<RedisConnectionFactory> {
 
-	private static final boolean JEDIS_AVAILABLE = ClassUtils
-			.isPresent("redis.clients.jedis.Jedis", ClassUtils.getDefaultClassLoader());
+	private static final boolean JEDIS_AVAILABLE = ClassUtils.isPresent("redis.clients.jedis.Jedis",
+			ClassUtils.getDefaultClassLoader());
 
-	private static final boolean LETTUCE_AVAILABLE = ClassUtils
-			.isPresent("io.lettuce.core.RedisClient", ClassUtils.getDefaultClassLoader());
+	private static final boolean LETTUCE_AVAILABLE = ClassUtils.isPresent("io.lettuce.core.RedisClient",
+			ClassUtils.getDefaultClassLoader());
+
+	public RedisCacheFactory() {
+	}
+
+	public RedisCacheFactory(Map<String, Integer> expiryTimePerCache, int expiryTime) {
+		super(expiryTimePerCache, expiryTime);
+	}
 
 	@Override
 	public boolean isSupportingCacheArchitecture(String architecture) {
@@ -44,13 +53,11 @@ public class RedisCacheFactory extends AbstractCacheFactory<RedisConnectionFacto
 
 	@Override
 	public Cache createCache(String cacheName, String host, int port) throws Exception {
-		return RedisCacheManager.builder(getConnectionFactory(host, port)).build()
-				.getCache(cacheName);
+		return RedisCacheManager.builder(getConnectionFactory(host, port)).build().getCache(cacheName);
 	}
 
 	@Override
-	protected void destroyConnectionClient(RedisConnectionFactory connectionClient)
-			throws Exception {
+	protected void destroyConnectionClient(RedisConnectionFactory connectionClient) throws Exception {
 		if (connectionClient instanceof DisposableBean) {
 			((DisposableBean) connectionClient).destroy();
 		}

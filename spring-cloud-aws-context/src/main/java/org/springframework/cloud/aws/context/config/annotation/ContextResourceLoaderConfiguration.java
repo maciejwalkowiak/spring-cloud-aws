@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@ import org.springframework.core.type.AnnotationMetadata;
 /**
  * @author Agim Emruli
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Import(ContextResourceLoaderConfiguration.Registrar.class)
 public class ContextResourceLoaderConfiguration {
 
@@ -46,22 +46,19 @@ public class ContextResourceLoaderConfiguration {
 		@Override
 		public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
 				BeanDefinitionRegistry registry) {
-			BeanDefinitionHolder client = AmazonWebserviceClientConfigurationUtils
-					.registerAmazonWebserviceClient(this, registry,
-							AmazonS3Client.class.getName(), null, null);
+			BeanDefinitionHolder client = AmazonWebserviceClientConfigurationUtils.registerAmazonWebserviceClient(this,
+					registry, AmazonS3Client.class.getName(), null, null);
 
 			BeanDefinitionBuilder configurer = BeanDefinitionBuilder
 					.genericBeanDefinition(SimpleStorageProtocolResolverConfigurer.class);
 			configurer.addConstructorArgValue(getProtocolResolver(client));
 
-			BeanDefinitionReaderUtils
-					.registerWithGeneratedName(configurer.getBeanDefinition(), registry);
+			BeanDefinitionReaderUtils.registerWithGeneratedName(configurer.getBeanDefinition(), registry);
 		}
 
 		protected BeanDefinition getProtocolResolver(BeanDefinitionHolder client) {
 			BeanDefinitionBuilder resolver = BeanDefinitionBuilder
 					.rootBeanDefinition(SimpleStorageProtocolResolver.class);
-			resolver.addConstructorArgReference(client.getBeanName());
 
 			BeanDefinition taskExecutor = getTaskExecutorDefinition();
 			if (taskExecutor != null) {

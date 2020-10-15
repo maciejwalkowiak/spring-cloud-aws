@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@
 package org.springframework.cloud.aws.autoconfigure.context;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.cloud.aws.context.annotation.ConditionalOnAwsCloudEnvironment;
+import org.springframework.cloud.aws.autoconfigure.condition.ConditionalOnAwsCloudEnvironment;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -30,7 +30,7 @@ import static org.springframework.cloud.aws.context.config.support.ContextConfig
 /**
  * @author Agim Emruli
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnAwsCloudEnvironment
 @Import(ContextInstanceDataAutoConfiguration.Registrar.class)
 public class ContextInstanceDataAutoConfiguration {
@@ -38,8 +38,7 @@ public class ContextInstanceDataAutoConfiguration {
 	/**
 	 * Registrar for additional environment setup.
 	 */
-	public static class Registrar
-			implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+	public static class Registrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 
 		private Environment environment;
 
@@ -47,10 +46,8 @@ public class ContextInstanceDataAutoConfiguration {
 		public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
 				BeanDefinitionRegistry registry) {
 			registerInstanceDataPropertySource(registry,
-					this.environment
-							.getProperty("cloud.aws.instance.data.valueSeparator"),
-					this.environment
-							.getProperty("cloud.aws.instance.data.attributeSeparator"));
+					this.environment.getProperty("cloud.aws.instance.data.valueSeparator"),
+					this.environment.getProperty("cloud.aws.instance.data.attributeSeparator"));
 		}
 
 		@Override

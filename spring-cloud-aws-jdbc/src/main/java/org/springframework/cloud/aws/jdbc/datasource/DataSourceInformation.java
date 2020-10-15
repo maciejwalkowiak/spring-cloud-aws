@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -61,8 +61,8 @@ public final class DataSourceInformation {
 	 * @param userName - The username used to connect to the database
 	 * @param password - The password used to connect to the database
 	 */
-	public DataSourceInformation(DatabaseType databaseType, String hostName, Integer port,
-			String databaseName, String userName, String password) {
+	public DataSourceInformation(DatabaseType databaseType, String hostName, Integer port, String databaseName,
+			String userName, String password) {
 		Assert.notNull(databaseType, "DatabaseType must not be null");
 		Assert.notNull(hostName, "Hostname must not be null");
 		Assert.notNull(port, "Port must not be null");

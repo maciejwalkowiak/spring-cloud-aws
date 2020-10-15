@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,9 @@ package org.springframework.cloud.aws.core.io.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.aws.core.support.documentation.RuntimeUse;
 import org.springframework.core.io.ProtocolResolver;
@@ -31,9 +34,9 @@ import org.springframework.core.task.TaskExecutor;
  * @author Alain Sahli
  * @since 1.0
  */
-public class SimpleStorageProtocolResolver implements ProtocolResolver, InitializingBean {
+public class SimpleStorageProtocolResolver implements ProtocolResolver, InitializingBean, BeanFactoryAware {
 
-	private final AmazonS3 amazonS3;
+	private AmazonS3 amazonS3;
 
 	/**
 	 * <b>IMPORTANT:</b> If a task executor is set with an unbounded queue there will be a
@@ -42,7 +45,16 @@ public class SimpleStorageProtocolResolver implements ProtocolResolver, Initiali
 	 */
 	private TaskExecutor taskExecutor;
 
-	public SimpleStorageProtocolResolver(AmazonS3 amazonS3) {
+	private BeanFactory beanFactory;
+
+	public SimpleStorageProtocolResolver() {
+	}
+
+	/**
+	 * Used only for testing.
+	 * @param amazonS3 - the Amazon S3 client.
+	 */
+	SimpleStorageProtocolResolver(AmazonS3 amazonS3) {
 		this.amazonS3 = AmazonS3ProxyFactory.createProxy(amazonS3);
 	}
 
@@ -61,7 +73,7 @@ public class SimpleStorageProtocolResolver implements ProtocolResolver, Initiali
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (SimpleStorageNameUtils.isSimpleStorageResource(location)) {
-			return new SimpleStorageResource(this.amazonS3,
+			return new SimpleStorageResource(this.getAmazonS3(),
 					SimpleStorageNameUtils.getBucketNameFromLocation(location),
 					SimpleStorageNameUtils.getObjectNameFromLocation(location),
 					this.taskExecutor,
@@ -74,7 +86,15 @@ public class SimpleStorageProtocolResolver implements ProtocolResolver, Initiali
 	}
 
 	public AmazonS3 getAmazonS3() {
+		if (this.amazonS3 == null) {
+			this.amazonS3 = AmazonS3ProxyFactory.createProxy(this.beanFactory.getBean(AmazonS3.class));
+		}
 		return this.amazonS3;
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
 	}
 
 }

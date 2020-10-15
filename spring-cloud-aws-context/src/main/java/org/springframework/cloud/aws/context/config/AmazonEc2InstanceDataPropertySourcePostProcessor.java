@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -66,8 +66,7 @@ public class AmazonEc2InstanceDataPropertySourcePostProcessor
 	}
 
 	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-			throws BeansException {
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		if (this.environment instanceof ConfigurableEnvironment) {
 			AmazonEc2InstanceDataPropertySource propertySource = new AmazonEc2InstanceDataPropertySource(
 					INSTANCE_DATA_PROPERTY_SOURCE_NAME);
@@ -80,12 +79,10 @@ public class AmazonEc2InstanceDataPropertySourcePostProcessor
 				propertySource.setUserDataAttributeSeparator(this.attributeSeparator);
 			}
 
-			((ConfigurableEnvironment) this.environment).getPropertySources()
-					.addLast(propertySource);
+			((ConfigurableEnvironment) this.environment).getPropertySources().addLast(propertySource);
 		}
 		else {
-			LOGGER.warn(
-					"Environment is not of type '{}' property source with instance data is not available",
+			LOGGER.warn("Environment is not of type '{}' property source with instance data is not available",
 					ConfigurableEnvironment.class.getName());
 		}
 	}

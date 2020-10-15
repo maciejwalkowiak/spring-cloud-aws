@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,24 +17,19 @@
 package org.springframework.cloud.aws.messaging.endpoint.config;
 
 import com.amazonaws.services.sns.AmazonSNS;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolverComposite;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-public class NotificationHandlerMethodArgumentResolverFactoryBeanTest {
-
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+class NotificationHandlerMethodArgumentResolverFactoryBeanTest {
 
 	@Test
-	public void getObjectType_defaultConfiguration_returnsHandlerMethodArgumentResolverType()
-			throws Exception {
+	void getObjectType_defaultConfiguration_returnsHandlerMethodArgumentResolverType() throws Exception {
 		// Arrange
 		AmazonSNS amazonSns = mock(AmazonSNS.class);
 		NotificationHandlerMethodArgumentResolverFactoryBean factoryBean;
@@ -48,8 +43,7 @@ public class NotificationHandlerMethodArgumentResolverFactoryBeanTest {
 	}
 
 	@Test
-	public void getObject_withDefaultConfiguration_createCompositeResolverWithAllDelegatedResolvers()
-			throws Exception {
+	void getObject_withDefaultConfiguration_createCompositeResolverWithAllDelegatedResolvers() throws Exception {
 		// Arrange
 		AmazonSNS amazonSns = mock(AmazonSNS.class);
 		NotificationHandlerMethodArgumentResolverFactoryBean factoryBean;
@@ -61,21 +55,15 @@ public class NotificationHandlerMethodArgumentResolverFactoryBeanTest {
 
 		// Assert
 		assertThat(argumentResolver).isNotNull();
-		assertThat(((HandlerMethodArgumentResolverComposite) argumentResolver)
-				.getResolvers().size()).isEqualTo(3);
+		assertThat(((HandlerMethodArgumentResolverComposite) argumentResolver).getResolvers().size()).isEqualTo(3);
 	}
 
 	@Test
-	public void createInstance_withNullSnsClient_reportsError() throws Exception {
-		// Arrange
-		this.expectedException.expect(IllegalArgumentException.class);
-		this.expectedException.expectMessage("not be null");
-
-		// Act
-		// noinspection ResultOfObjectAllocationIgnored
-		new NotificationHandlerMethodArgumentResolverFactoryBean(null);
-
+	void createInstance_withNullSnsClient_reportsError() throws Exception {
 		// Assert
+		assertThatThrownBy(() -> new NotificationHandlerMethodArgumentResolverFactoryBean(null))
+				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("not be null");
+
 	}
 
 }

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.aws.autoconfigure.context;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.cloud.aws.core.io.s3.SimpleStorageProtocolResolver;
@@ -28,26 +28,25 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ContextResourceLoaderAutoConfigurationTest {
+class ContextResourceLoaderAutoConfigurationTest {
 
 	private AnnotationConfigApplicationContext context;
 
-	@After
-	public void tearDown() {
+	@AfterEach
+	void tearDown() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void createResourceLoader_withCustomTaskExecutorSettings_executorConfigured() {
+	void createResourceLoader_withCustomTaskExecutorSettings_executorConfigured() {
 		// Arrange
 		this.context = new AnnotationConfigApplicationContext();
 		this.context.register(ContextResourceLoaderAutoConfiguration.class);
 
-		TestPropertyValues.of("cloud.aws.loader.corePoolSize:10",
-				"cloud.aws.loader.maxPoolSize:20", "cloud.aws.loader.queueCapacity:0")
-				.applyTo(this.context);
+		TestPropertyValues.of("cloud.aws.loader.corePoolSize:10", "cloud.aws.loader.maxPoolSize:20",
+				"cloud.aws.loader.queueCapacity:0").applyTo(this.context);
 
 		// Act
 		this.context.refresh();
@@ -61,12 +60,11 @@ public class ContextResourceLoaderAutoConfigurationTest {
 
 		assertThat(taskExecutor.getCorePoolSize()).isEqualTo(10);
 		assertThat(taskExecutor.getMaxPoolSize()).isEqualTo(20);
-		assertThat(ReflectionTestUtils.getField(taskExecutor, "queueCapacity"))
-				.isEqualTo(0);
+		assertThat(ReflectionTestUtils.getField(taskExecutor, "queueCapacity")).isEqualTo(0);
 	}
 
 	@Test
-	public void createResourceLoader_withoutExecutorSettings_executorConfigured() {
+	void createResourceLoader_withoutExecutorSettings_executorConfigured() {
 
 		// Arrange
 		this.context = new AnnotationConfigApplicationContext();
@@ -78,8 +76,8 @@ public class ContextResourceLoaderAutoConfigurationTest {
 		// Assert
 		SimpleStorageProtocolResolver simpleStorageProtocolResolver = (SimpleStorageProtocolResolver) this.context
 				.getProtocolResolvers().iterator().next();
-		SyncTaskExecutor taskExecutor = (SyncTaskExecutor) ReflectionTestUtils
-				.getField(simpleStorageProtocolResolver, "taskExecutor");
+		SyncTaskExecutor taskExecutor = (SyncTaskExecutor) ReflectionTestUtils.getField(simpleStorageProtocolResolver,
+				"taskExecutor");
 		assertThat(taskExecutor).isNotNull();
 	}
 

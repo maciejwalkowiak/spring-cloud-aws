@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@ import java.util.Collections;
 
 import javax.sql.DataSource;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.jdbc.datasource.ConnectionProxy;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -38,11 +38,10 @@ import static org.mockito.Mockito.when;
 /**
  * @author Agim Emruli
  */
-public class ReadOnlyRoutingDataSourceTest {
+class ReadOnlyRoutingDataSourceTest {
 
 	@Test
-	public void getConnection_NoReadReplicaAvailableNoTransactionActive_returnsDefaultDataSource()
-			throws Exception {
+	void getConnection_NoReadReplicaAvailableNoTransactionActive_returnsDefaultDataSource() throws Exception {
 
 		// Arrange
 		DataSource defaultDataSource = mock(DataSource.class);
@@ -55,20 +54,17 @@ public class ReadOnlyRoutingDataSourceTest {
 		readOnlyRoutingDataSource.setDefaultTargetDataSource(defaultDataSource);
 		readOnlyRoutingDataSource.afterPropertiesSet();
 
-		LazyConnectionDataSourceProxy dataSource = new LazyConnectionDataSourceProxy(
-				readOnlyRoutingDataSource);
+		LazyConnectionDataSourceProxy dataSource = new LazyConnectionDataSourceProxy(readOnlyRoutingDataSource);
 
 		// Act
 		Connection connectionReturned = dataSource.getConnection();
 
 		// Assert
-		assertThat(((ConnectionProxy) connectionReturned).getTargetConnection())
-				.isSameAs(connection);
+		assertThat(((ConnectionProxy) connectionReturned).getTargetConnection()).isSameAs(connection);
 	}
 
 	@Test
-	public void getConnection_NoReadReplicaAvailableReadOnlyTransactionActive_returnsDefaultDataSource()
-			throws Exception {
+	void getConnection_NoReadReplicaAvailableReadOnlyTransactionActive_returnsDefaultDataSource() throws Exception {
 
 		// Arrange
 		DataSource defaultDataSource = mock(DataSource.class);
@@ -81,20 +77,18 @@ public class ReadOnlyRoutingDataSourceTest {
 		readOnlyRoutingDataSource.setDefaultTargetDataSource(defaultDataSource);
 		readOnlyRoutingDataSource.afterPropertiesSet();
 
-		LazyConnectionDataSourceProxy dataSource = new LazyConnectionDataSourceProxy(
-				readOnlyRoutingDataSource);
+		LazyConnectionDataSourceProxy dataSource = new LazyConnectionDataSourceProxy(readOnlyRoutingDataSource);
 
 		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
 		transactionDefinition.setReadOnly(true);
 
-		TransactionTemplate transactionTemplate = new TransactionTemplate(
-				new DataSourceTransactionManager(dataSource), transactionDefinition);
+		TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource),
+				transactionDefinition);
 
 		// Act
 		Connection connectionReturned = transactionTemplate.execute(status -> {
 			try {
-				return ((ConnectionProxy) dataSource.getConnection())
-						.getTargetConnection();
+				return ((ConnectionProxy) dataSource.getConnection()).getTargetConnection();
 			}
 			catch (SQLException e) {
 				fail(e.getMessage());
@@ -107,8 +101,7 @@ public class ReadOnlyRoutingDataSourceTest {
 	}
 
 	@Test
-	public void getConnection_ReadReplicaAvailableReadOnlyTransactionActive_returnsReadReplicaDataSource()
-			throws Exception {
+	void getConnection_ReadReplicaAvailableReadOnlyTransactionActive_returnsReadReplicaDataSource() throws Exception {
 
 		// Arrange
 		DataSource defaultDataSource = mock(DataSource.class);
@@ -121,25 +114,22 @@ public class ReadOnlyRoutingDataSourceTest {
 		when(defaultDataSource.getConnection()).thenReturn(connection);
 
 		ReadOnlyRoutingDataSource readOnlyRoutingDataSource = new ReadOnlyRoutingDataSource();
-		readOnlyRoutingDataSource.setTargetDataSources(
-				Collections.singletonMap("read1", readOnlyDataSource));
+		readOnlyRoutingDataSource.setTargetDataSources(Collections.singletonMap("read1", readOnlyDataSource));
 		readOnlyRoutingDataSource.setDefaultTargetDataSource(defaultDataSource);
 		readOnlyRoutingDataSource.afterPropertiesSet();
 
-		LazyConnectionDataSourceProxy dataSource = new LazyConnectionDataSourceProxy(
-				readOnlyRoutingDataSource);
+		LazyConnectionDataSourceProxy dataSource = new LazyConnectionDataSourceProxy(readOnlyRoutingDataSource);
 
 		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
 		transactionDefinition.setReadOnly(true);
 
-		TransactionTemplate transactionTemplate = new TransactionTemplate(
-				new DataSourceTransactionManager(dataSource), transactionDefinition);
+		TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource),
+				transactionDefinition);
 
 		// Act
 		Connection connectionReturned = transactionTemplate.execute(status -> {
 			try {
-				return ((ConnectionProxy) dataSource.getConnection())
-						.getTargetConnection();
+				return ((ConnectionProxy) dataSource.getConnection()).getTargetConnection();
 			}
 			catch (SQLException e) {
 				fail(e.getMessage());
@@ -152,8 +142,7 @@ public class ReadOnlyRoutingDataSourceTest {
 	}
 
 	@Test
-	public void getConnection_ReadReplicaAvailableWriteTransactionActive_returnsDefaultDataSource()
-			throws Exception {
+	void getConnection_ReadReplicaAvailableWriteTransactionActive_returnsDefaultDataSource() throws Exception {
 
 		// Arrange
 		DataSource defaultDataSource = mock(DataSource.class);
@@ -166,25 +155,22 @@ public class ReadOnlyRoutingDataSourceTest {
 		when(defaultDataSource.getConnection()).thenReturn(connection);
 
 		ReadOnlyRoutingDataSource readOnlyRoutingDataSource = new ReadOnlyRoutingDataSource();
-		readOnlyRoutingDataSource.setTargetDataSources(
-				Collections.singletonMap("read1", readOnlyDataSource));
+		readOnlyRoutingDataSource.setTargetDataSources(Collections.singletonMap("read1", readOnlyDataSource));
 		readOnlyRoutingDataSource.setDefaultTargetDataSource(defaultDataSource);
 		readOnlyRoutingDataSource.afterPropertiesSet();
 
-		LazyConnectionDataSourceProxy dataSource = new LazyConnectionDataSourceProxy(
-				readOnlyRoutingDataSource);
+		LazyConnectionDataSourceProxy dataSource = new LazyConnectionDataSourceProxy(readOnlyRoutingDataSource);
 
 		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
 		transactionDefinition.setReadOnly(false);
 
-		TransactionTemplate transactionTemplate = new TransactionTemplate(
-				new DataSourceTransactionManager(dataSource), transactionDefinition);
+		TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource),
+				transactionDefinition);
 
 		// Act
 		Connection connectionReturned = transactionTemplate.execute(status -> {
 			try {
-				return ((ConnectionProxy) dataSource.getConnection())
-						.getTargetConnection();
+				return ((ConnectionProxy) dataSource.getConnection()).getTargetConnection();
 			}
 			catch (SQLException e) {
 				fail(e.getMessage());

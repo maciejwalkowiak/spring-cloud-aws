@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ package org.springframework.cloud.aws.core.io.s3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -37,10 +37,10 @@ import static org.mockito.Mockito.when;
  * @author Alain Sahli
  * @since 1.0
  */
-public class SimpleStorageProtocolResolverTest {
+class SimpleStorageProtocolResolverTest {
 
 	@Test
-	public void testGetResourceWithExistingResource() {
+	void testGetResourceWithExistingResource() {
 
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 
@@ -48,8 +48,7 @@ public class SimpleStorageProtocolResolverTest {
 		resourceLoader.addProtocolResolver(new SimpleStorageProtocolResolver(amazonS3));
 
 		ObjectMetadata metadata = new ObjectMetadata();
-		when(amazonS3.getObjectMetadata(any(GetObjectMetadataRequest.class)))
-				.thenReturn(metadata);
+		when(amazonS3.getObjectMetadata(any(GetObjectMetadataRequest.class))).thenReturn(metadata);
 
 		String resourceName = "s3://bucket/object/";
 		Resource resource = resourceLoader.getResource(resourceName);
@@ -57,7 +56,7 @@ public class SimpleStorageProtocolResolverTest {
 	}
 
 	@Test
-	public void testGetResourceWithNonExistingResource() {
+	void testGetResourceWithNonExistingResource() {
 
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 
@@ -70,25 +69,22 @@ public class SimpleStorageProtocolResolverTest {
 	}
 
 	@Test
-	public void testGetResourceWithVersionId() {
+	void testGetResourceWithVersionId() {
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 
-		SimpleStorageProtocolResolver resourceLoader = new SimpleStorageProtocolResolver(
-				amazonS3);
+		SimpleStorageProtocolResolver resourceLoader = new SimpleStorageProtocolResolver(amazonS3);
 
 		ObjectMetadata metadata = new ObjectMetadata();
 
-		when(amazonS3.getObjectMetadata(any(GetObjectMetadataRequest.class)))
-				.thenReturn(metadata);
+		when(amazonS3.getObjectMetadata(any(GetObjectMetadataRequest.class))).thenReturn(metadata);
 
 		String resourceName = "s3://bucket/object^versionIdValue";
-		Resource resource = resourceLoader.resolve(resourceName,
-				new DefaultResourceLoader());
+		Resource resource = resourceLoader.resolve(resourceName, new DefaultResourceLoader());
 		assertThat(resource).isNotNull();
 	}
 
 	@Test
-	public void testGetResourceWithDifferentPatterns() {
+	void testGetResourceWithDifferentPatterns() {
 
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 
@@ -99,14 +95,13 @@ public class SimpleStorageProtocolResolverTest {
 
 		assertThat(resourceLoader.getResource("s3://bucket/object")).isNotNull();
 
-		assertThat(resourceLoader.getResource("s3://prefix.bucket/object.suffix"))
-				.isNotNull();
+		assertThat(resourceLoader.getResource("s3://prefix.bucket/object.suffix")).isNotNull();
 
 		verify(amazonS3, times(0)).getObjectMetadata("bucket", "object");
 	}
 
 	@Test
-	public void testGetResourceWithMalFormedUrl() {
+	void testGetResourceWithMalFormedUrl() {
 
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 
@@ -125,7 +120,7 @@ public class SimpleStorageProtocolResolverTest {
 	}
 
 	@Test
-	public void testValidS3Pattern() {
+	void testValidS3Pattern() {
 		AmazonS3 amazonS3 = mock(AmazonS3.class);
 
 		DefaultResourceLoader resourceLoader = new DefaultResourceLoader();

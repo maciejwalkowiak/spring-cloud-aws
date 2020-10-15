@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,6 +38,11 @@ public abstract class AbstractCacheFactory<T> implements CacheFactory, Disposabl
 	protected AbstractCacheFactory() {
 	}
 
+	protected AbstractCacheFactory(Map<String, Integer> expiryTimePerCache, int expiryTime) {
+		this.setExpiryTimePerCache(expiryTimePerCache);
+		this.setExpiryTime(expiryTime);
+	}
+
 	@Override
 	public void destroy() throws Exception {
 		synchronized (this.nativeConnectionClients) {
@@ -62,8 +67,7 @@ public abstract class AbstractCacheFactory<T> implements CacheFactory, Disposabl
 		}
 	}
 
-	protected abstract T createConnectionClient(String hostName, int port)
-			throws IOException;
+	protected abstract T createConnectionClient(String hostName, int port) throws IOException;
 
 	protected int getExpiryTime() {
 		return this.expiryTime;
@@ -79,8 +83,7 @@ public abstract class AbstractCacheFactory<T> implements CacheFactory, Disposabl
 
 	@SuppressWarnings("UnusedParameters")
 	protected int getExpiryTime(String cacheName) {
-		if (this.expiryTimePerCache.containsKey(cacheName)
-				&& this.expiryTimePerCache.get(cacheName) != null
+		if (this.expiryTimePerCache.containsKey(cacheName) && this.expiryTimePerCache.get(cacheName) != null
 				&& this.expiryTimePerCache.get(cacheName) != 0) {
 			return this.expiryTimePerCache.get(cacheName);
 		}

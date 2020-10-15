@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +18,9 @@ package org.springframework.cloud.aws.secretsmanager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.amazonaws.services.secretsmanager.AWSSecretsManager;
 import org.apache.commons.logging.Log;
@@ -39,26 +40,34 @@ import org.springframework.util.ReflectionUtils;
  * support.
  *
  * @author Fabio Maia
+ * @author Matej Nedic
  * @since 2.0.0
  */
 public class AwsSecretsManagerPropertySourceLocator implements PropertySourceLocator {
+
+	private String propertySourceName;
 
 	private AWSSecretsManager smClient;
 
 	private AwsSecretsManagerProperties properties;
 
-	private List<String> contexts = new ArrayList<>();
+	private final Set<String> contexts = new LinkedHashSet();
 
 	private Log logger = LogFactory.getLog(getClass());
 
-	public AwsSecretsManagerPropertySourceLocator(AWSSecretsManager smClient,
+	public AwsSecretsManagerPropertySourceLocator(String propertySourceName, AWSSecretsManager smClient,
 			AwsSecretsManagerProperties properties) {
+		this.propertySourceName = propertySourceName;
 		this.smClient = smClient;
 		this.properties = properties;
 	}
 
+	public AwsSecretsManagerPropertySourceLocator(AWSSecretsManager smClient, AwsSecretsManagerProperties properties) {
+		this("aws-secrets-manager", smClient, properties);
+	}
+
 	public List<String> getContexts() {
-		return contexts;
+		return new ArrayList<>(contexts);
 	}
 
 	@Override
@@ -79,18 +88,15 @@ public class AwsSecretsManagerPropertySourceLocator implements PropertySourceLoc
 
 		String prefix = this.properties.getPrefix();
 
+		String appContext = prefix + "/" + appName;
+		addProfiles(this.contexts, appContext, profiles);
+		this.contexts.add(appContext);
+
 		String defaultContext = prefix + "/" + this.properties.getDefaultContext();
-		this.contexts.add(defaultContext);
 		addProfiles(this.contexts, defaultContext, profiles);
+		this.contexts.add(defaultContext);
 
-		String baseContext = prefix + "/" + appName;
-		this.contexts.add(baseContext);
-		addProfiles(this.contexts, baseContext, profiles);
-
-		Collections.reverse(this.contexts);
-
-		CompositePropertySource composite = new CompositePropertySource(
-				"aws-secrets-manager");
+		CompositePropertySource composite = new CompositePropertySource(this.propertySourceName);
 
 		for (String propertySourceContext : this.contexts) {
 			try {
@@ -104,8 +110,7 @@ public class AwsSecretsManagerPropertySourceLocator implements PropertySourceLoc
 					ReflectionUtils.rethrowRuntimeException(e);
 				}
 				else {
-					logger.warn("Unable to load AWS secret from " + propertySourceContext,
-							e);
+					logger.warn("Unable to load AWS secret from " + propertySourceContext, e);
 				}
 			}
 		}
@@ -114,14 +119,12 @@ public class AwsSecretsManagerPropertySourceLocator implements PropertySourceLoc
 	}
 
 	private AwsSecretsManagerPropertySource create(String context) {
-		AwsSecretsManagerPropertySource propertySource = new AwsSecretsManagerPropertySource(
-				context, this.smClient);
+		AwsSecretsManagerPropertySource propertySource = new AwsSecretsManagerPropertySource(context, this.smClient);
 		propertySource.init();
 		return propertySource;
 	}
 
-	private void addProfiles(List<String> contexts, String baseContext,
-			List<String> profiles) {
+	private void addProfiles(Set<String> contexts, String baseContext, List<String> profiles) {
 		for (String profile : profiles) {
 			contexts.add(baseContext + this.properties.getProfileSeparator() + profile);
 		}

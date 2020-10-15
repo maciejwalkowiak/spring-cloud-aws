@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 @RequestMapping("/myComplexTopic")
-public class ComplexNotificationTestController {
+class ComplexNotificationTestController {
 
 	private String subject;
 
@@ -46,43 +46,42 @@ public class ComplexNotificationTestController {
 	}
 
 	@NotificationSubscriptionMapping
-	public void handleSubscriptionMessage(NotificationStatus status) throws IOException {
+	void handleSubscriptionMessage(NotificationStatus status) throws IOException {
 		// We subscribe to start receive the message
 		status.confirmSubscription();
 	}
 
 	@NotificationMessageMapping
-	public void handleNotificationMessage(@NotificationSubject String subject,
-			@NotificationMessage Person message) {
+	void handleNotificationMessage(@NotificationSubject String subject, @NotificationMessage Person message) {
 		this.subject = subject;
 		this.message = message;
 	}
 
 	@NotificationUnsubscribeConfirmationMapping
-	public void handleUnsubscribeMessage(NotificationStatus status) {
+	void handleUnsubscribeMessage(NotificationStatus status) {
 		// e.g. the client has been unsubscribed and we want to "re-subscribe"
 		status.confirmSubscription();
 	}
 
-	public static class Person {
+	static class Person {
 
 		private String firstName;
 
 		private String lastName;
 
-		public String getFirstName() {
+		String getFirstName() {
 			return this.firstName;
 		}
 
-		public void setFirstName(String firstName) {
+		void setFirstName(String firstName) {
 			this.firstName = firstName;
 		}
 
-		public String getLastName() {
+		String getLastName() {
 			return this.lastName;
 		}
 
-		public void setLastName(String lastName) {
+		void setLastName(String lastName) {
 			this.lastName = lastName;
 		}
 

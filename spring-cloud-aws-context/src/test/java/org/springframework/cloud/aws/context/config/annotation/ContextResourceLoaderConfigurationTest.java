@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.aws.context.config.annotation;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.aws.core.io.s3.SimpleStorageProtocolResolver;
@@ -28,42 +28,39 @@ import org.springframework.core.io.ResourceLoader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ContextResourceLoaderConfigurationTest {
+class ContextResourceLoaderConfigurationTest {
 
 	private AnnotationConfigApplicationContext context;
 
-	@After
-	public void tearDown() {
+	@AfterEach
+	void tearDown() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void regionProvider_withConfiguredRegion_staticRegionProviderConfigured() {
+	void regionProvider_withConfiguredRegion_staticRegionProviderConfigured() {
 		// Arrange
-		this.context = new AnnotationConfigApplicationContext(
-				ApplicationConfigurationWithResourceLoader.class);
+		this.context = new AnnotationConfigApplicationContext(ApplicationConfigurationWithResourceLoader.class);
 
 		// Act
 		ApplicationBean bean = this.context.getBean(ApplicationBean.class);
 
 		// Assert
 		assertThat(bean.getResourceLoader()).isNotNull();
-		assertThat(DefaultResourceLoader.class.isInstance(bean.getResourceLoader()))
-				.isTrue();
+		assertThat(DefaultResourceLoader.class.isInstance(bean.getResourceLoader())).isTrue();
 
-		DefaultResourceLoader defaultResourceLoader = (DefaultResourceLoader) bean
-				.getResourceLoader();
-		assertThat(SimpleStorageProtocolResolver.class.isInstance(
-				defaultResourceLoader.getProtocolResolvers().iterator().next())).isTrue();
+		DefaultResourceLoader defaultResourceLoader = (DefaultResourceLoader) bean.getResourceLoader();
+		assertThat(defaultResourceLoader.getProtocolResolvers().iterator().next())
+				.isInstanceOf(SimpleStorageProtocolResolver.class);
 	}
 
 	@EnableContextResourceLoader
 	static class ApplicationConfigurationWithResourceLoader {
 
 		@Bean
-		public ApplicationBean appBean() {
+		ApplicationBean appBean() {
 			return new ApplicationBean();
 		}
 

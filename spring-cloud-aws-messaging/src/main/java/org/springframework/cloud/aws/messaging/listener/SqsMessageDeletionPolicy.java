@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,6 +26,7 @@ package org.springframework.cloud.aws.messaging.listener;
  * dead letter queue).
  * <p>
  * The following deletion policies are available:
+ * </p>
  * <ul>
  * <li><b>ALWAYS</b>: Always deletes message in case of success (no exception thrown) or
  * failure (exception thrown) during message processing by the listener method.</li>
@@ -36,9 +37,9 @@ package org.springframework.cloud.aws.messaging.listener;
  * method. If an exception is thrown by the listener method, the message will not be
  * deleted.</li>
  * </ul>
- * </p>
  *
  * @author Alain Sahli
+ * @author Matej Nedic
  * @since 1.1
  * @see org.springframework.cloud.aws.messaging.listener.annotation.SqsListener
  */
@@ -72,6 +73,12 @@ public enum SqsMessageDeletionPolicy {
 	 * Deletes message when successfully executed by the listener method. If an exception
 	 * is thrown by the listener method, the message will not be deleted.
 	 */
-	ON_SUCCESS
+	ON_SUCCESS,
+
+	/**
+	 * If this is set in SqsListener, it will use default value set for specific
+	 * QueueMessageHandlerFactory. Default, if not changed is set to NO_REDRIVE.
+	 */
+	DEFAULT
 
 }

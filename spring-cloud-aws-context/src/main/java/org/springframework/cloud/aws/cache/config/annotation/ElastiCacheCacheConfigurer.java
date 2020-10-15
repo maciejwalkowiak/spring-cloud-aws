@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,9 +42,8 @@ public class ElastiCacheCacheConfigurer extends CachingConfigurerSupport {
 
 	private final List<CacheFactory> cacheFactories;
 
-	public ElastiCacheCacheConfigurer(AmazonElastiCache amazonElastiCache,
-			ResourceIdResolver resourceIdResolver, List<String> cacheNames,
-			List<CacheFactory> cacheFactories) {
+	public ElastiCacheCacheConfigurer(AmazonElastiCache amazonElastiCache, ResourceIdResolver resourceIdResolver,
+			List<String> cacheNames, List<CacheFactory> cacheFactories) {
 		this.cacheNames = cacheNames;
 		this.amazonElastiCache = amazonElastiCache;
 		this.resourceIdResolver = resourceIdResolver;
@@ -66,9 +65,8 @@ public class ElastiCacheCacheConfigurer extends CachingConfigurerSupport {
 
 	protected Cache clusterCache(String cacheName) {
 		try {
-			ElastiCacheFactoryBean cacheFactoryBean = new ElastiCacheFactoryBean(
-					this.amazonElastiCache, cacheName, this.resourceIdResolver,
-					this.cacheFactories);
+			ElastiCacheFactoryBean cacheFactoryBean = new ElastiCacheFactoryBean(this.amazonElastiCache, cacheName,
+					this.resourceIdResolver, this.cacheFactories);
 			cacheFactoryBean.afterPropertiesSet();
 			return cacheFactoryBean.getObject();
 		}

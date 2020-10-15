@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,8 +28,7 @@ import org.springframework.util.ClassUtils;
 /**
  * @author Alain Sahli
  */
-public class NotificationSubjectArgumentResolver
-		implements HandlerMethodArgumentResolver {
+public class NotificationSubjectArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private final MessageConverter converter;
 
@@ -44,10 +43,9 @@ public class NotificationSubjectArgumentResolver
 	}
 
 	@Override
-	public Object resolveArgument(MethodParameter parameter, Message<?> message)
-			throws Exception {
-		return ((NotificationRequestConverter.NotificationRequest) this.converter
-				.fromMessage(message, String.class)).getSubject();
+	public Object resolveArgument(MethodParameter parameter, Message<?> message) throws Exception {
+		return ((NotificationRequestConverter.NotificationRequest) this.converter.fromMessage(message, String.class))
+				.getSubject();
 	}
 
 }

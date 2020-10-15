@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,7 @@ import java.util.Properties;
 
 import org.apache.tomcat.jdbc.pool.ConnectionPool;
 import org.apache.tomcat.jdbc.pool.DataSource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
@@ -43,16 +43,15 @@ import static org.assertj.core.api.Assertions.fail;
  * @author Agim Emruli
  * @since 1.0
  */
-public class TomcatJdbcDataSourceFactoryTest {
+class TomcatJdbcDataSourceFactoryTest {
 
 	@Test
-	public void testCreateWithDefaultSettings() throws Exception {
+	void testCreateWithDefaultSettings() throws Exception {
 		TomcatJdbcDataSourceFactory tomcatJdbcDataSourceFactory = new TomcatJdbcDataSourceFactory();
 
-		DataSourceInformation dataSourceInformation = new DataSourceInformation(
-				DatabaseType.MYSQL, "localhost", 3306, "test", "user", "password");
-		DataSource dataSource = tomcatJdbcDataSourceFactory
-				.createDataSource(dataSourceInformation);
+		DataSourceInformation dataSourceInformation = new DataSourceInformation(DatabaseType.MYSQL, "localhost", 3306,
+				"test", "user", "password");
+		DataSource dataSource = tomcatJdbcDataSourceFactory.createDataSource(dataSourceInformation);
 		assertThat(dataSource).isNotNull();
 
 		assertThat(dataSource.getDriverClassName()).isEqualTo("com.mysql.jdbc.Driver");
@@ -61,33 +60,30 @@ public class TomcatJdbcDataSourceFactoryTest {
 	}
 
 	@Test
-	public void testWithCustomDatabasePlatformSupport() throws Exception {
+	void testWithCustomDatabasePlatformSupport() throws Exception {
 		TomcatJdbcDataSourceFactory tomcatJdbcDataSourceFactory = new TomcatJdbcDataSourceFactory();
 
-		tomcatJdbcDataSourceFactory
-				.setDatabasePlatformSupport(new MapBasedDatabasePlatformSupport() {
+		tomcatJdbcDataSourceFactory.setDatabasePlatformSupport(new MapBasedDatabasePlatformSupport() {
 
-					@Override
-					protected Map<DatabaseType, String> getDriverClassNameMappings() {
-						return Collections.singletonMap(DatabaseType.MYSQL,
-								"com.mysql.driver");
-					}
+			@Override
+			protected Map<DatabaseType, String> getDriverClassNameMappings() {
+				return Collections.singletonMap(DatabaseType.MYSQL, "com.mysql.driver");
+			}
 
-					@Override
-					protected Map<DatabaseType, String> getSchemeNames() {
-						return Collections.singletonMap(DatabaseType.MYSQL, "jdbc:sql");
-					}
+			@Override
+			protected Map<DatabaseType, String> getSchemeNames() {
+				return Collections.singletonMap(DatabaseType.MYSQL, "jdbc:sql");
+			}
 
-					@Override
-					protected Map<DatabaseType, String> getAuthenticationInfo() {
-						return Collections.emptyMap();
-					}
-				});
+			@Override
+			protected Map<DatabaseType, String> getAuthenticationInfo() {
+				return Collections.emptyMap();
+			}
+		});
 
-		DataSourceInformation dataSourceInformation = new DataSourceInformation(
-				DatabaseType.MYSQL, "localhost", 3306, "test", "user", "password");
-		DataSource dataSource = tomcatJdbcDataSourceFactory
-				.createDataSource(dataSourceInformation);
+		DataSourceInformation dataSourceInformation = new DataSourceInformation(DatabaseType.MYSQL, "localhost", 3306,
+				"test", "user", "password");
+		DataSource dataSource = tomcatJdbcDataSourceFactory.createDataSource(dataSourceInformation);
 		assertThat(dataSource).isNotNull();
 
 		assertThat(dataSource.getDriverClassName()).isEqualTo("com.mysql.driver");
@@ -96,14 +92,13 @@ public class TomcatJdbcDataSourceFactoryTest {
 	}
 
 	@Test
-	public void testCloseDataSource() throws Exception {
+	void testCloseDataSource() throws Exception {
 		TomcatJdbcDataSourceFactory tomcatJdbcDataSourceFactory = new TomcatJdbcDataSourceFactory();
 		tomcatJdbcDataSourceFactory.setInitialSize(0);
 
-		DataSourceInformation dataSourceInformation = new DataSourceInformation(
-				DatabaseType.MYSQL, "localhost", 3306, "test", "user", "password");
-		DataSource dataSource = tomcatJdbcDataSourceFactory
-				.createDataSource(dataSourceInformation);
+		DataSourceInformation dataSourceInformation = new DataSourceInformation(DatabaseType.MYSQL, "localhost", 3306,
+				"test", "user", "password");
+		DataSource dataSource = tomcatJdbcDataSourceFactory.createDataSource(dataSourceInformation);
 		assertThat(dataSource).isNotNull();
 
 		ConnectionPool pool = dataSource.createPool();
@@ -113,7 +108,7 @@ public class TomcatJdbcDataSourceFactoryTest {
 	}
 
 	@Test
-	public void testSetDefaultIsolationLevelName() throws Exception {
+	void testSetDefaultIsolationLevelName() throws Exception {
 		TomcatJdbcDataSourceFactory tomcatJdbcDataSourceFactory = new TomcatJdbcDataSourceFactory();
 		tomcatJdbcDataSourceFactory.setDefaultTransactionIsolationName("READ_COMMITTED");
 
@@ -122,14 +117,13 @@ public class TomcatJdbcDataSourceFactoryTest {
 	}
 
 	@Test
-	public void testAllPropertiesSet() throws Exception {
+	void testAllPropertiesSet() throws Exception {
 		TomcatJdbcDataSourceFactory tomcatJdbcDataSourceFactory = new TomcatJdbcDataSourceFactory();
 
 		tomcatJdbcDataSourceFactory.setDbProperties(new Properties());
 		tomcatJdbcDataSourceFactory.setDefaultAutoCommit(true);
 		tomcatJdbcDataSourceFactory.setDefaultReadOnly(false);
-		tomcatJdbcDataSourceFactory.setDefaultTransactionIsolation(
-				TransactionDefinition.ISOLATION_READ_COMMITTED);
+		tomcatJdbcDataSourceFactory.setDefaultTransactionIsolation(TransactionDefinition.ISOLATION_READ_COMMITTED);
 		tomcatJdbcDataSourceFactory.setDefaultCatalog("myCatalog");
 		tomcatJdbcDataSourceFactory.setConnectionProperties("foo=bar");
 		tomcatJdbcDataSourceFactory.setInitialSize(11);
@@ -167,21 +161,16 @@ public class TomcatJdbcDataSourceFactoryTest {
 		tomcatJdbcDataSourceFactory.setLogValidationErrors(true);
 		tomcatJdbcDataSourceFactory.setPropagateInterruptState(true);
 
-		DataSourceInformation dataSourceInformation = new DataSourceInformation(
-				DatabaseType.MYSQL, "localhost", 3306, "test", "user", "password");
-		DataSource dataSource = tomcatJdbcDataSourceFactory
-				.createDataSource(dataSourceInformation);
+		DataSourceInformation dataSourceInformation = new DataSourceInformation(DatabaseType.MYSQL, "localhost", 3306,
+				"test", "user", "password");
+		DataSource dataSource = tomcatJdbcDataSourceFactory.createDataSource(dataSourceInformation);
 
-		BeanWrapper source = PropertyAccessorFactory
-				.forBeanPropertyAccess(tomcatJdbcDataSourceFactory);
-		BeanWrapper target = PropertyAccessorFactory
-				.forBeanPropertyAccess(dataSource.getPoolProperties());
-		List<String> ignoredProperties = Arrays.asList("driverClassName", "url",
-				"username", "password");
+		BeanWrapper source = PropertyAccessorFactory.forBeanPropertyAccess(tomcatJdbcDataSourceFactory);
+		BeanWrapper target = PropertyAccessorFactory.forBeanPropertyAccess(dataSource.getPoolProperties());
+		List<String> ignoredProperties = Arrays.asList("driverClassName", "url", "username", "password");
 
 		for (PropertyDescriptor propertyDescriptor : source.getPropertyDescriptors()) {
-			if (propertyDescriptor.getWriteMethod() != null
-					&& target.isReadableProperty(propertyDescriptor.getName())
+			if (propertyDescriptor.getWriteMethod() != null && target.isReadableProperty(propertyDescriptor.getName())
 					&& !ignoredProperties.contains(propertyDescriptor.getName())) {
 				assertThat(target.getPropertyValue(propertyDescriptor.getName()))
 						.isEqualTo(source.getPropertyValue(propertyDescriptor.getName()));
@@ -192,7 +181,7 @@ public class TomcatJdbcDataSourceFactoryTest {
 
 	@Test // Test that the setters are not usable which will be configured at runtime
 			// during datasource creation
-	public void testInvalidPoolAttributes() throws Exception {
+	void testInvalidPoolAttributes() throws Exception {
 
 		TomcatJdbcDataSourceFactory tomcatJdbcDataSourceFactory = new TomcatJdbcDataSourceFactory();
 

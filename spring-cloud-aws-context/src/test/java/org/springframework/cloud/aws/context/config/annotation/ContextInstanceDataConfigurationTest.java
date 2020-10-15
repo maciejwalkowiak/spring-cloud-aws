@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,9 +20,9 @@ import java.lang.reflect.Field;
 
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.aws.context.MetaDataServer;
 import org.springframework.cloud.aws.context.support.env.AwsCloudEnvironmentCheckUtils;
@@ -32,12 +32,12 @@ import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ContextInstanceDataConfigurationTest {
+class ContextInstanceDataConfigurationTest {
 
 	private AnnotationConfigApplicationContext context;
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterEach
+	void tearDown() throws Exception {
 		if (this.context != null) {
 			this.context.close();
 		}
@@ -45,7 +45,7 @@ public class ContextInstanceDataConfigurationTest {
 	}
 
 	@Test
-	public void propertySource_nonCloudEnvironment_noBeanConfigured() throws Exception {
+	void propertySource_nonCloudEnvironment_noBeanConfigured() throws Exception {
 		// Arrange
 		this.context = new AnnotationConfigApplicationContext();
 		this.context.register(ApplicationConfiguration.class);
@@ -58,27 +58,23 @@ public class ContextInstanceDataConfigurationTest {
 	}
 
 	@Test
-	public void propertySource_enableInstanceData_propertySourceConfigured()
-			throws Exception {
+	void propertySource_enableInstanceData_propertySourceConfigured() throws Exception {
 		// Arrange
 		HttpServer httpServer = MetaDataServer.setupHttpServer();
-		HttpContext httpContext = httpServer.createContext(
-				"/latest/meta-data/instance-id",
+		HttpContext httpContext = httpServer.createContext("/latest/meta-data/instance-id",
 				new MetaDataServer.HttpResponseWriterHandler("test"));
 
 		// Act
-		this.context = new AnnotationConfigApplicationContext(
-				ApplicationConfiguration.class);
+		this.context = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
 
 		// Assert
-		assertThat(this.context.getEnvironment().getProperty("instance-id"))
-				.isEqualTo("test");
+		assertThat(this.context.getEnvironment().getProperty("instance-id")).isEqualTo("test");
 		httpServer.removeContext(httpContext);
 	}
 
 	// @checkstyle:off
 	@Test
-	public void propertySource_enableInstanceDataWithCustomAttributeSeparator_propertySourceConfiguredAndUsesCustomAttributeSeparator()
+	void propertySource_enableInstanceDataWithCustomAttributeSeparator_propertySourceConfiguredAndUsesCustomAttributeSeparator()
 			throws Exception {
 		// @checkstyle:on
 		// Arrange
@@ -99,7 +95,7 @@ public class ContextInstanceDataConfigurationTest {
 
 	// @checkstyle:off
 	@Test
-	public void propertySource_enableInstanceDataWithCustomValueSeparator_propertySourceConfiguredAndUsesCustomValueSeparator()
+	void propertySource_enableInstanceDataWithCustomValueSeparator_propertySourceConfiguredAndUsesCustomValueSeparator()
 			throws Exception {
 		// @checkstyle:on
 		// Arrange
@@ -108,8 +104,7 @@ public class ContextInstanceDataConfigurationTest {
 				new MetaDataServer.HttpResponseWriterHandler("a=b;c=d"));
 
 		// Act
-		this.context = new AnnotationConfigApplicationContext(
-				ApplicationConfigurationWithCustomValueSeparator.class);
+		this.context = new AnnotationConfigApplicationContext(ApplicationConfigurationWithCustomValueSeparator.class);
 
 		// Assert
 		assertThat(this.context.getEnvironment().getProperty("a")).isEqualTo("b");
@@ -118,30 +113,29 @@ public class ContextInstanceDataConfigurationTest {
 		httpServer.removeContext(httpContext);
 	}
 
-	@Before
-	public void restContextInstanceDataCondition() throws IllegalAccessException {
-		Field field = ReflectionUtils.findField(AwsCloudEnvironmentCheckUtils.class,
-				"isCloudEnvironment");
+	@BeforeEach
+	void restContextInstanceDataCondition() throws IllegalAccessException {
+		Field field = ReflectionUtils.findField(AwsCloudEnvironmentCheckUtils.class, "isCloudEnvironment");
 		assertThat(field).isNotNull();
 		ReflectionUtils.makeAccessible(field);
 		field.set(null, null);
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableContextInstanceData
-	public static class ApplicationConfiguration {
+	static class ApplicationConfiguration {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableContextInstanceData(attributeSeparator = "/")
-	public static class ApplicationConfigurationWithCustomAttributeSeparator {
+	static class ApplicationConfigurationWithCustomAttributeSeparator {
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@EnableContextInstanceData(valueSeparator = "=")
-	public static class ApplicationConfigurationWithCustomValueSeparator {
+	static class ApplicationConfigurationWithCustomValueSeparator {
 
 	}
 

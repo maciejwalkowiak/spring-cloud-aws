@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,7 @@ import io.micrometer.cloudwatch.CloudWatchConfig;
 import io.micrometer.cloudwatch.CloudWatchMeterRegistry;
 import io.micrometer.core.instrument.Clock;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration;
@@ -37,6 +37,7 @@ import org.springframework.cloud.aws.autoconfigure.context.ContextCredentialsAut
 import org.springframework.cloud.aws.context.annotation.ConditionalOnMissingAmazonClient;
 import org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean;
 import org.springframework.cloud.aws.core.region.RegionProvider;
+import org.springframework.cloud.aws.core.region.StaticRegionProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -47,34 +48,41 @@ import org.springframework.context.annotation.Import;
  * @author Jon Schneider
  * @author Dawid Kublik
  * @author Jan Sauer
+ * @author Eddú Meléndez
  * @since 2.0.0
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Import(ContextCredentialsAutoConfiguration.class)
-@AutoConfigureBefore({ CompositeMeterRegistryAutoConfiguration.class,
-		SimpleMetricsExportAutoConfiguration.class })
+@AutoConfigureBefore({ CompositeMeterRegistryAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class })
 @AutoConfigureAfter(MetricsAutoConfiguration.class)
 @EnableConfigurationProperties(CloudWatchProperties.class)
 @ConditionalOnProperty(prefix = "management.metrics.export.cloudwatch", name = "namespace")
 @ConditionalOnClass({ CloudWatchMeterRegistry.class, RegionProvider.class })
 public class CloudWatchExportAutoConfiguration {
 
-	@Autowired(required = false)
-	private RegionProvider regionProvider;
+	private final AWSCredentialsProvider credentialsProvider;
+
+	private final RegionProvider regionProvider;
+
+	public CloudWatchExportAutoConfiguration(AWSCredentialsProvider credentialsProvider,
+			ObjectProvider<RegionProvider> regionProvider, CloudWatchProperties properties) {
+		this.credentialsProvider = credentialsProvider;
+		this.regionProvider = properties.getRegion() == null ? regionProvider.getIfAvailable()
+				: new StaticRegionProvider(properties.getRegion());
+	}
 
 	@Bean
 	@ConditionalOnProperty(value = "management.metrics.export.cloudwatch.enabled", matchIfMissing = true)
-	public CloudWatchMeterRegistry cloudWatchMeterRegistry(CloudWatchConfig config,
-			Clock clock, AmazonCloudWatchAsync client) {
+	public CloudWatchMeterRegistry cloudWatchMeterRegistry(CloudWatchConfig config, Clock clock,
+			AmazonCloudWatchAsync client) {
 		return new CloudWatchMeterRegistry(config, clock, client);
 	}
 
 	@Bean
 	@ConditionalOnMissingAmazonClient(AmazonCloudWatchAsync.class)
-	public AmazonWebserviceClientFactoryBean<AmazonCloudWatchAsyncClient> amazonCloudWatchAsync(
-			AWSCredentialsProvider credentialsProvider) {
-		return new AmazonWebserviceClientFactoryBean<>(AmazonCloudWatchAsyncClient.class,
-				credentialsProvider, this.regionProvider);
+	public AmazonWebserviceClientFactoryBean<AmazonCloudWatchAsyncClient> amazonCloudWatchAsync() {
+		return new AmazonWebserviceClientFactoryBean<>(AmazonCloudWatchAsyncClient.class, this.credentialsProvider,
+				this.regionProvider);
 	}
 
 	@Bean

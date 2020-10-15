@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,6 +29,7 @@ import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.regions.Regions;
 
 import org.springframework.beans.factory.config.AbstractFactoryBean;
+import org.springframework.cloud.aws.core.SpringCloudClientConfiguration;
 import org.springframework.cloud.aws.core.region.RegionProvider;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -43,9 +44,9 @@ import org.springframework.util.ReflectionUtils;
  *
  * @param <T> implementation of the {@link AmazonWebServiceClient}
  * @author Agim Emruli
+ * @author Eddú Meléndez
  */
-public class AmazonWebserviceClientFactoryBean<T extends AmazonWebServiceClient>
-		extends AbstractFactoryBean<T> {
+public class AmazonWebserviceClientFactoryBean<T extends AmazonWebServiceClient> extends AbstractFactoryBean<T> {
 
 	private final Class<? extends AmazonWebServiceClient> clientClass;
 
@@ -57,14 +58,13 @@ public class AmazonWebserviceClientFactoryBean<T extends AmazonWebServiceClient>
 
 	private ExecutorService executor;
 
-	public AmazonWebserviceClientFactoryBean(Class<T> clientClass,
-			AWSCredentialsProvider credentialsProvider) {
+	public AmazonWebserviceClientFactoryBean(Class<T> clientClass, AWSCredentialsProvider credentialsProvider) {
 		this.clientClass = clientClass;
 		this.credentialsProvider = credentialsProvider;
 	}
 
-	public AmazonWebserviceClientFactoryBean(Class<T> clientClass,
-			AWSCredentialsProvider credentialsProvider, RegionProvider regionProvider) {
+	public AmazonWebserviceClientFactoryBean(Class<T> clientClass, AWSCredentialsProvider credentialsProvider,
+			RegionProvider regionProvider) {
 		this(clientClass, credentialsProvider);
 		setRegionProvider(regionProvider);
 	}
@@ -79,20 +79,19 @@ public class AmazonWebserviceClientFactoryBean<T extends AmazonWebServiceClient>
 	protected T createInstance() throws Exception {
 
 		String builderName = this.clientClass.getName() + "Builder";
-		Class<?> className = ClassUtils.resolveClassName(builderName,
-				ClassUtils.getDefaultClassLoader());
+		Class<?> className = ClassUtils.resolveClassName(builderName, ClassUtils.getDefaultClassLoader());
 
 		Method method = ClassUtils.getStaticMethod(className, "standard");
-		Assert.notNull(method, "Could not find standard() method in class:'"
-				+ className.getName() + "'");
+		Assert.notNull(method, "Could not find standard() method in class:'" + className.getName() + "'");
 
-		AwsClientBuilder<?, T> builder = (AwsClientBuilder<?, T>) ReflectionUtils
-				.invokeMethod(method, null);
+		AwsClientBuilder<?, T> builder = (AwsClientBuilder<?, T>) ReflectionUtils.invokeMethod(method, null);
 
 		if (this.executor != null) {
 			AwsAsyncClientBuilder<?, T> asyncBuilder = (AwsAsyncClientBuilder<?, T>) builder;
 			asyncBuilder.withExecutorFactory((ExecutorFactory) () -> this.executor);
 		}
+
+		builder.withClientConfiguration(SpringCloudClientConfiguration.getClientConfiguration());
 
 		if (this.credentialsProvider != null) {
 			builder.withCredentials(this.credentialsProvider);

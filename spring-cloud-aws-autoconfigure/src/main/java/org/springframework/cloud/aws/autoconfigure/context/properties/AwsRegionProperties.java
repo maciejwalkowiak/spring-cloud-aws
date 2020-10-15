@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,19 +16,24 @@
 
 package org.springframework.cloud.aws.autoconfigure.context.properties;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.StringUtils;
+
 /**
  * Properties related to AWS region configuration.
  *
  * @author Tom Gianos
+ * @author Maciej Walkowiak
  * @since 2.0.2
  * @see org.springframework.cloud.aws.autoconfigure.context.ContextRegionProviderAutoConfiguration
  */
+@ConfigurationProperties(prefix = AwsRegionProperties.PREFIX)
 public class AwsRegionProperties {
 
 	/**
-	 * Enables automatic region detection based on the EC2 meta data service.
+	 * The prefix used for AWS region related properties.
 	 */
-	private boolean auto = true;
+	public static final String PREFIX = "cloud.aws.region";
 
 	/**
 	 * Configures a static region for the application. Possible regions are (currently)
@@ -38,16 +43,12 @@ public class AwsRegionProperties {
 	 */
 	private String staticRegion;
 
-	public boolean isAuto() {
-		return this.auto;
-	}
-
-	public void setAuto(boolean auto) {
-		this.auto = auto;
-	}
-
 	public String getStatic() {
 		return this.staticRegion;
+	}
+
+	public boolean isStatic() {
+		return StringUtils.hasText(this.staticRegion);
 	}
 
 	public void setStatic(String staticRegion) {

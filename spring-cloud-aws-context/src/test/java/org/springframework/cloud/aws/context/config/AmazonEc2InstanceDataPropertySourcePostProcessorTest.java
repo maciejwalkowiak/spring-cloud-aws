@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.aws.context.config;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -29,28 +29,24 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Agim Emruli
  */
-public class AmazonEc2InstanceDataPropertySourcePostProcessorTest {
+class AmazonEc2InstanceDataPropertySourcePostProcessorTest {
 
 	@Test
-	public void postProcessBeanFactory_withConfigurableEnvironment_registersPropertySource()
-			throws Exception {
+	void postProcessBeanFactory_withConfigurableEnvironment_registersPropertySource() throws Exception {
 		// Arrange
 		StaticApplicationContext staticApplicationContext = new StaticApplicationContext();
-		staticApplicationContext.registerSingleton("process",
-				AmazonEc2InstanceDataPropertySourcePostProcessor.class);
+		staticApplicationContext.registerSingleton("process", AmazonEc2InstanceDataPropertySourcePostProcessor.class);
 
 		// Act
 		staticApplicationContext.refresh();
 
 		// Assert
-		assertThat(staticApplicationContext.getEnvironment().getPropertySources().get(
-				AmazonEc2InstanceDataPropertySourcePostProcessor.INSTANCE_DATA_PROPERTY_SOURCE_NAME))
-						.isNotNull();
+		assertThat(staticApplicationContext.getEnvironment().getPropertySources()
+				.get(AmazonEc2InstanceDataPropertySourcePostProcessor.INSTANCE_DATA_PROPERTY_SOURCE_NAME)).isNotNull();
 	}
 
 	@Test
-	public void postProcessBeanFactory_withNonConfigurableEnvironment_skipsRegistration()
-			throws Exception {
+	void postProcessBeanFactory_withNonConfigurableEnvironment_skipsRegistration() throws Exception {
 		// Arrange
 		ConfigurableListableBeanFactory staticApplicationContext = new DefaultListableBeanFactory();
 		AmazonEc2InstanceDataPropertySourcePostProcessor processor = new AmazonEc2InstanceDataPropertySourcePostProcessor();

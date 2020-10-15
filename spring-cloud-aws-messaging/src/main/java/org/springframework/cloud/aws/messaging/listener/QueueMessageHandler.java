@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,6 +34,7 @@ import org.springframework.cloud.aws.messaging.listener.support.AcknowledgmentHa
 import org.springframework.cloud.aws.messaging.listener.support.VisibilityHandlerMethodArgumentResolver;
 import org.springframework.cloud.aws.messaging.support.NotificationMessageArgumentResolver;
 import org.springframework.cloud.aws.messaging.support.NotificationSubjectArgumentResolver;
+import org.springframework.cloud.aws.messaging.support.SqsHeadersMethodArgumentResolver;
 import org.springframework.cloud.aws.messaging.support.converter.ObjectMessageConverter;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -42,16 +43,18 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.converter.CompositeMessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.SimpleMessageConverter;
+import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.handler.HandlerMethod;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.support.AnnotationExceptionHandlerMethodResolver;
 import org.springframework.messaging.handler.annotation.support.HeaderMethodArgumentResolver;
-import org.springframework.messaging.handler.annotation.support.HeadersMethodArgumentResolver;
+import org.springframework.messaging.handler.annotation.support.MessageMethodArgumentResolver;
 import org.springframework.messaging.handler.annotation.support.PayloadArgumentResolver;
 import org.springframework.messaging.handler.invocation.AbstractExceptionHandlerMethodResolver;
 import org.springframework.messaging.handler.invocation.AbstractMethodMessageHandler;
 import org.springframework.messaging.handler.invocation.HandlerMethodArgumentResolver;
 import org.springframework.messaging.handler.invocation.HandlerMethodReturnValueHandler;
+import org.springframework.messaging.handler.invocation.InvocableHandlerMethod;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.comparator.ComparableComparator;
 import org.springframework.validation.Errors;
@@ -61,23 +64,29 @@ import org.springframework.validation.Validator;
  * @author Agim Emruli
  * @author Alain Sahli
  * @author Maciej Walkowiak
+ * @author Wojciech Mąka
+ * @author Matej Nedic
  * @since 1.0
  */
-public class QueueMessageHandler
-		extends AbstractMethodMessageHandler<QueueMessageHandler.MappingInformation> {
+public class QueueMessageHandler extends AbstractMethodMessageHandler<QueueMessageHandler.MappingInformation> {
 
 	static final String LOGICAL_RESOURCE_ID = "LogicalResourceId";
 	static final String ACKNOWLEDGMENT = "Acknowledgment";
 	static final String VISIBILITY = "Visibility";
 
+	private final SqsMessageDeletionPolicy sqsMessageDeletionPolicy;
+
 	private final List<MessageConverter> messageConverters;
 
-	public QueueMessageHandler(List<MessageConverter> messageConverters) {
+	public QueueMessageHandler(List<MessageConverter> messageConverters,
+			SqsMessageDeletionPolicy sqsMessageDeletionPolicy) {
 		this.messageConverters = messageConverters;
+		this.sqsMessageDeletionPolicy = sqsMessageDeletionPolicy;
 	}
 
 	public QueueMessageHandler() {
 		this.messageConverters = Collections.emptyList();
+		this.sqsMessageDeletionPolicy = SqsMessageDeletionPolicy.NO_REDRIVE;
 	}
 
 	private static String[] wrapInStringArray(Object valueToWrap) {
@@ -86,11 +95,10 @@ public class QueueMessageHandler
 
 	@Override
 	protected List<? extends HandlerMethodArgumentResolver> initArgumentResolvers() {
-		List<HandlerMethodArgumentResolver> resolvers = new ArrayList<>(
-				getCustomArgumentResolvers());
+		List<HandlerMethodArgumentResolver> resolvers = new ArrayList<>(getCustomArgumentResolvers());
 
 		resolvers.add(new HeaderMethodArgumentResolver(null, null));
-		resolvers.add(new HeadersMethodArgumentResolver());
+		resolvers.add(new SqsHeadersMethodArgumentResolver());
 
 		resolvers.add(new NotificationSubjectArgumentResolver());
 		resolvers.add(new AcknowledgmentHandlerMethodArgumentResolver(ACKNOWLEDGMENT));
@@ -98,15 +106,16 @@ public class QueueMessageHandler
 
 		CompositeMessageConverter compositeMessageConverter = createPayloadArgumentCompositeConverter();
 		resolvers.add(new NotificationMessageArgumentResolver(compositeMessageConverter));
-		resolvers.add(new PayloadArgumentResolver(compositeMessageConverter,
-				new NoOpValidator()));
+		resolvers.add(new MessageMethodArgumentResolver(this.messageConverters.isEmpty() ? new StringMessageConverter()
+				: new CompositeMessageConverter(this.messageConverters)));
+		resolvers.add(new SqsMessageMethodArgumentResolver());
+		resolvers.add(new PayloadArgumentResolver(compositeMessageConverter, new NoOpValidator()));
 
 		return resolvers;
 	}
 
 	@Override
 	protected List<? extends HandlerMethodReturnValueHandler> initReturnValueHandlers() {
-
 		return new ArrayList<>(this.getCustomReturnValueHandlers());
 	}
 
@@ -116,28 +125,24 @@ public class QueueMessageHandler
 	}
 
 	@Override
-	protected MappingInformation getMappingForMethod(Method method,
-			Class<?> handlerType) {
-		SqsListener sqsListenerAnnotation = AnnotationUtils.findAnnotation(method,
-				SqsListener.class);
+	protected MappingInformation getMappingForMethod(Method method, Class<?> handlerType) {
+		SqsListener sqsListenerAnnotation = AnnotationUtils.findAnnotation(method, SqsListener.class);
 		if (sqsListenerAnnotation != null && sqsListenerAnnotation.value().length > 0) {
-			if (sqsListenerAnnotation.deletionPolicy() == SqsMessageDeletionPolicy.NEVER
+			SqsMessageDeletionPolicy tempDeletionPolicy = sqsListenerAnnotation
+					.deletionPolicy() == SqsMessageDeletionPolicy.DEFAULT ? sqsMessageDeletionPolicy
+							: sqsListenerAnnotation.deletionPolicy();
+			if (tempDeletionPolicy == SqsMessageDeletionPolicy.NEVER
 					&& hasNoAcknowledgmentParameter(method.getParameterTypes())) {
 				this.logger.warn("Listener method '" + method.getName() + "' in type '"
 						+ method.getDeclaringClass().getName()
 						+ "' has deletion policy 'NEVER' but does not have a parameter of type Acknowledgment.");
 			}
-			return new MappingInformation(
-					resolveDestinationNames(sqsListenerAnnotation.value()),
-					sqsListenerAnnotation.deletionPolicy());
+			return new MappingInformation(resolveDestinationNames(sqsListenerAnnotation.value()), tempDeletionPolicy);
 		}
 
-		MessageMapping messageMappingAnnotation = AnnotationUtils.findAnnotation(method,
-				MessageMapping.class);
-		if (messageMappingAnnotation != null
-				&& messageMappingAnnotation.value().length > 0) {
-			return new MappingInformation(
-					resolveDestinationNames(messageMappingAnnotation.value()),
+		MessageMapping messageMappingAnnotation = AnnotationUtils.findAnnotation(method, MessageMapping.class);
+		if (messageMappingAnnotation != null && messageMappingAnnotation.value().length > 0) {
+			return new MappingInformation(resolveDestinationNames(messageMappingAnnotation.value()),
 					SqsMessageDeletionPolicy.ALWAYS);
 		}
 
@@ -170,12 +175,10 @@ public class QueueMessageHandler
 		}
 
 		ConfigurableApplicationContext applicationContext = (ConfigurableApplicationContext) getApplicationContext();
-		ConfigurableBeanFactory configurableBeanFactory = applicationContext
-				.getBeanFactory();
+		ConfigurableBeanFactory configurableBeanFactory = applicationContext.getBeanFactory();
 
 		String placeholdersResolved = configurableBeanFactory.resolveEmbeddedValue(name);
-		BeanExpressionResolver exprResolver = configurableBeanFactory
-				.getBeanExpressionResolver();
+		BeanExpressionResolver exprResolver = configurableBeanFactory.getBeanExpressionResolver();
 		if (exprResolver == null) {
 			return wrapInStringArray(name);
 		}
@@ -203,8 +206,7 @@ public class QueueMessageHandler
 	}
 
 	@Override
-	protected MappingInformation getMatchingMapping(MappingInformation mapping,
-			Message<?> message) {
+	protected MappingInformation getMatchingMapping(MappingInformation mapping, Message<?> message) {
 		if (mapping.getLogicalResourceIds().contains(getDestination(message))) {
 			return mapping;
 		}
@@ -219,28 +221,29 @@ public class QueueMessageHandler
 	}
 
 	@Override
-	protected AbstractExceptionHandlerMethodResolver createExceptionHandlerMethodResolverFor(
-			Class<?> beanType) {
+	protected AbstractExceptionHandlerMethodResolver createExceptionHandlerMethodResolverFor(Class<?> beanType) {
 		return new AnnotationExceptionHandlerMethodResolver(beanType);
 	}
 
 	@Override
-	protected void handleNoMatch(Set<MappingInformation> ts, String lookupDestination,
-			Message<?> message) {
+	protected void handleNoMatch(Set<MappingInformation> ts, String lookupDestination, Message<?> message) {
 		this.logger.warn("No match found");
 	}
 
 	@Override
-	protected void processHandlerMethodException(HandlerMethod handlerMethod,
-			Exception ex, Message<?> message) {
-		super.processHandlerMethodException(handlerMethod, ex, message);
-		throw new MessagingException(
-				"An exception occurred while invoking the handler method", ex);
+	protected void processHandlerMethodException(HandlerMethod handlerMethod, Exception ex, Message<?> message) {
+		InvocableHandlerMethod exceptionHandlerMethod = getExceptionHandlerMethod(handlerMethod, ex);
+		if (exceptionHandlerMethod != null) {
+			super.processHandlerMethodException(handlerMethod, ex, message);
+		}
+		else {
+			this.logger.error("An exception occurred while invoking the handler method", ex);
+		}
+		throw new MessagingException("An exception occurred while invoking the handler method", ex);
 	}
 
 	private CompositeMessageConverter createPayloadArgumentCompositeConverter() {
-		List<MessageConverter> payloadArgumentConverters = new ArrayList<>(
-				this.messageConverters);
+		List<MessageConverter> payloadArgumentConverters = new ArrayList<>(this.messageConverters);
 
 		ObjectMessageConverter objectMessageConverter = new ObjectMessageConverter();
 		objectMessageConverter.setStrictContentTypeMatch(true);
@@ -258,8 +261,7 @@ public class QueueMessageHandler
 
 		private final SqsMessageDeletionPolicy deletionPolicy;
 
-		public MappingInformation(Set<String> logicalResourceIds,
-				SqsMessageDeletionPolicy deletionPolicy) {
+		public MappingInformation(Set<String> logicalResourceIds, SqsMessageDeletionPolicy deletionPolicy) {
 			this.logicalResourceIds = Collections.unmodifiableSet(logicalResourceIds);
 			this.deletionPolicy = deletionPolicy;
 		}

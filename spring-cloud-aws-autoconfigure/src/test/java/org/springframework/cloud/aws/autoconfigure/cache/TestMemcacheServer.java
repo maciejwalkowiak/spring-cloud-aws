@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@ import org.springframework.util.SocketUtils;
 // Suppression as this is not a util class
 // @checkstyle:off
 @SuppressWarnings({ "UtilityClassWithoutPrivateConstructor", "NonFinalUtilityClass" })
-public class TestMemcacheServer {
+class TestMemcacheServer {
 
 	// @checkstyle:on
 
@@ -44,7 +44,7 @@ public class TestMemcacheServer {
 	@SuppressWarnings("StaticNonFinalField")
 	private static int portForInstance;
 
-	public static int startServer() {
+	static int startServer() {
 		if (daemon == null) {
 			System.setProperty("net.spy.log.LoggerImpl", SLF4JLogger.class.getName());
 
@@ -53,9 +53,8 @@ public class TestMemcacheServer {
 
 			// noinspection NonThreadSafeLazyInitialization
 			daemon = new MemCacheDaemon<>();
-			CacheStorage<Key, LocalCacheElement> storage = ConcurrentLinkedHashMap.create(
-					ConcurrentLinkedHashMap.EvictionPolicy.FIFO, 1024 * 1024,
-					1024 * 1024 * 1024);
+			CacheStorage<Key, LocalCacheElement> storage = ConcurrentLinkedHashMap
+					.create(ConcurrentLinkedHashMap.EvictionPolicy.FIFO, 1024 * 1024, 1024 * 1024 * 1024);
 			daemon.setCache(new CacheImpl(storage));
 			daemon.setAddr(new InetSocketAddress(portForInstance));
 			daemon.setVerbose(true);
@@ -64,7 +63,7 @@ public class TestMemcacheServer {
 		return portForInstance;
 	}
 
-	public static void stopServer() {
+	static void stopServer() {
 		try {
 			daemon.stop();
 			daemon = null;

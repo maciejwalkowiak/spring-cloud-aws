@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,79 +18,79 @@ package org.springframework.cloud.aws.autoconfigure.context;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.cloud.aws.core.region.Ec2MetadataRegionProvider;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.aws.context.config.support.ContextConfigurationUtils;
+import org.springframework.cloud.aws.core.region.DefaultAwsRegionProviderChainDelegate;
+import org.springframework.cloud.aws.core.region.RegionProvider;
 import org.springframework.cloud.aws.core.region.StaticRegionProvider;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for {@link ContextRegionProviderAutoConfiguration}.
+ *
  * @author Agim Emruli
  * @author Petromir Dzhunev
+ * @author Maciej Walkowiak
  */
-public class ContextRegionProviderAutoConfigurationTest {
+class ContextRegionProviderAutoConfigurationTest {
 
-	private AnnotationConfigApplicationContext context;
+	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(ContextRegionProviderAutoConfiguration.class));
 
-	@After
-	public void tearDown() throws Exception {
-		if (this.context != null) {
-			this.context.close();
+	@Test
+	void autoDetectionConfigured_noConfigurationProvided_DefaultAwsRegionProviderChainDelegateConfigured() {
+		this.contextRunner.run((context) -> {
+			assertThat(context.getBean(DefaultAwsRegionProviderChainDelegate.class)).isNotNull();
+		});
+	}
+
+	@Test
+	void autoDetectionConfigured_emptyStaticRegionConfigured_DefaultAwsRegionProviderChainDelegateConfigured() {
+		this.contextRunner.withPropertyValues("cloud.aws.region.static:").run((context) -> {
+			assertThat(context.getBean(DefaultAwsRegionProviderChainDelegate.class)).isNotNull();
+		});
+	}
+
+	@Test
+	void staticRegionConfigured_staticRegionProviderWithConfiguredRegionConfigured() {
+		this.contextRunner.withPropertyValues("cloud.aws.region.static:eu-west-1").run((context) -> {
+			StaticRegionProvider regionProvider = context.getBean(StaticRegionProvider.class);
+			assertThat(regionProvider.getRegion()).isEqualTo(Region.getRegion(Regions.EU_WEST_1));
+		});
+	}
+
+	@Test
+	void customRegionConfigured() {
+		this.contextRunner.withUserConfiguration(CustomRegionProviderConfiguration.class).run((context) -> {
+			RegionProvider regionProvider = context.getBean(RegionProvider.class);
+			assertThat(regionProvider).isNotNull().isInstanceOf(CustomRegionProvider.class);
+		});
+
+	}
+
+	@Configuration
+	static class CustomRegionProviderConfiguration {
+
+		@Bean(name = ContextConfigurationUtils.REGION_PROVIDER_BEAN_NAME)
+		public RegionProvider customRegionProvider() {
+			return new CustomRegionProvider();
 		}
 
 	}
 
-	@Test
-	public void regionProvider_autoDetectionConfigured_Ec2metaDataRegionProviderConfigured()
-			throws Exception {
-		// Arrange
-		this.context = new AnnotationConfigApplicationContext();
-		this.context.register(ContextRegionProviderAutoConfiguration.class);
-		TestPropertyValues.of("cloud.aws.region.auto").applyTo(this.context);
+	static class CustomRegionProvider implements RegionProvider {
 
-		// Act
-		this.context.refresh();
+		@Override
+		public Region getRegion() {
+			return null;
+		}
 
-		// Assert
-		assertThat(this.context.getBean(Ec2MetadataRegionProvider.class)).isNotNull();
-	}
-
-	@Test
-	public void regionProvider_autoDetectionConfigured_emptyStaticRegionConfigured_Ec2metaDataRegionProviderConfigured()
-			throws Exception {
-		// Arrange
-		this.context = new AnnotationConfigApplicationContext();
-		this.context.register(ContextRegionProviderAutoConfiguration.class);
-		TestPropertyValues.of("cloud.aws.region.auto").applyTo(this.context);
-		TestPropertyValues.of("cloud.aws.region.static:").applyTo(this.context);
-
-		// Act
-		this.context.refresh();
-
-		// Assert
-		assertThat(this.context.getBean(Ec2MetadataRegionProvider.class)).isNotNull();
-	}
-
-	@Test
-	public void regionProvider_staticRegionConfigured_staticRegionProviderWithConfiguredRegionConfigured()
-			throws Exception {
-		// Arrange
-		this.context = new AnnotationConfigApplicationContext();
-		this.context.register(ContextRegionProviderAutoConfiguration.class);
-		TestPropertyValues.of("cloud.aws.region.static:eu-west-1").applyTo(this.context);
-
-		// Act
-		this.context.refresh();
-		StaticRegionProvider regionProvider = this.context
-				.getBean(StaticRegionProvider.class);
-
-		// Assert
-		assertThat(regionProvider.getRegion())
-				.isEqualTo(Region.getRegion(Regions.EU_WEST_1));
 	}
 
 }

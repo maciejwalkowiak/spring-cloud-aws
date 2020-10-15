@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,25 +27,24 @@ import static org.springframework.cloud.aws.context.config.support.ContextConfig
 
 /**
  * @author Agim Emruli
+ * @deprecated use auto-configuration
  */
-@Configuration
-public class ContextRegionConfigurationRegistrar
-		implements ImportBeanDefinitionRegistrar {
+@Configuration(proxyBeanMethods = false)
+@Deprecated
+public class ContextRegionConfigurationRegistrar implements ImportBeanDefinitionRegistrar {
 
 	@Override
-	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
-			BeanDefinitionRegistry registry) {
+	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		AnnotationAttributes annotationAttributes = AnnotationAttributes
-				.fromMap(importingClassMetadata.getAnnotationAttributes(
-						EnableContextRegion.class.getName(), false));
+				.fromMap(importingClassMetadata.getAnnotationAttributes(EnableContextRegion.class.getName(), false));
 		Assert.notNull(annotationAttributes,
-				"@EnableRegionProvider is not present on importing class "
-						+ importingClassMetadata.getClassName());
+				"@EnableRegionProvider is not present on importing class " + importingClassMetadata.getClassName());
 
 		boolean autoDetect = annotationAttributes.getBoolean("autoDetect");
+		boolean useDefaultAwsRegionChain = annotationAttributes.getBoolean("useDefaultAwsRegionChain");
 		String configuredRegion = annotationAttributes.getString("region");
 
-		registerRegionProvider(registry, autoDetect, configuredRegion);
+		registerRegionProvider(registry, autoDetect, useDefaultAwsRegionChain, configuredRegion);
 	}
 
 }

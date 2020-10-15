@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,128 +27,118 @@ import com.amazonaws.services.cloudformation.model.ListStackResourcesResult;
 import com.amazonaws.services.cloudformation.model.StackResource;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.aws.context.support.env.AwsCloudEnvironmentCheckUtils;
 import org.springframework.cloud.aws.core.env.ResourceIdResolver;
 import org.springframework.cloud.aws.core.env.stack.StackResourceRegistry;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.cloud.aws.core.env.stack.config.AutoDetectingStackNameProvider;
+import org.springframework.cloud.aws.core.env.stack.config.StackNameProvider;
+import org.springframework.cloud.aws.core.env.stack.config.StaticStackNameProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ContextStackAutoConfigurationTest {
+class ContextStackAutoConfigurationTest {
 
-	private AnnotationConfigApplicationContext context;
+	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(ContextStackAutoConfiguration.class));
 
-	@Before
-	public void restContextInstanceDataCondition() throws IllegalAccessException {
-		Field field = ReflectionUtils.findField(AwsCloudEnvironmentCheckUtils.class,
-				"isCloudEnvironment");
+	@BeforeEach
+	void restContextInstanceDataCondition() throws IllegalAccessException {
+		Field field = ReflectionUtils.findField(AwsCloudEnvironmentCheckUtils.class, "isCloudEnvironment");
 		assertThat(field).isNotNull();
 		ReflectionUtils.makeAccessible(field);
 		field.set(null, null);
 	}
 
-	@After
-	public void tearDown() throws Exception {
-		if (this.context != null) {
-			this.context.close();
-		}
-	}
-
 	@Test
-	public void stackRegistry_autoConfigurationEnabled_returnsAutoConfiguredStackRegistry()
-			throws Exception {
-		// Arrange
-		this.context = new AnnotationConfigApplicationContext();
-		this.context.register(AutoConfigurationStackRegistryTestConfiguration.class);
-		this.context.register(ContextStackAutoConfiguration.class);
+	void stackRegistry_autoConfigurationEnabled_returnsAutoConfiguredStackRegistry() throws Exception {
 		HttpServer httpServer = MetaDataServer.setupHttpServer();
-		HttpContext httpContext = httpServer.createContext(
-				"/latest/meta-data/instance-id",
+		HttpContext httpContext = httpServer.createContext("/latest/meta-data/instance-id",
 				new MetaDataServer.HttpResponseWriterHandler("test"));
 
-		// Act
-		this.context.refresh();
-
-		// Assert
-		assertThat(this.context.getBean(StackResourceRegistry.class)).isNotNull();
+		this.contextRunner.withUserConfiguration(AutoConfigurationStackRegistryTestConfiguration.class)
+				.run(context -> assertThat(context.getBean(StackResourceRegistry.class)).isNotNull());
 
 		httpServer.removeContext(httpContext);
 		MetaDataServer.shutdownHttpServer();
 	}
 
 	@Test
-	public void stackRegistry_manualConfigurationEnabled_returnsAutoConfiguredStackRegistry()
-			throws Exception {
-		// Arrange
-		this.context = new AnnotationConfigApplicationContext();
-		this.context.register(ManualConfigurationStackRegistryTestConfiguration.class);
-		this.context.register(ContextStackAutoConfiguration.class);
-		TestPropertyValues.of("cloud.aws.stack.name:manualStackName")
-				.applyTo(this.context);
-
-		// Act
-		this.context.refresh();
-
-		// Assert
-		assertThat(this.context.getBean(StackResourceRegistry.class)).isNotNull();
+	void stackRegistry_manualConfigurationEnabled_returnsAutoConfiguredStackRegistry() {
+		this.contextRunner.withPropertyValues("cloud.aws.stack.name:manualStackName", "cloud.aws.stack.auto:true")
+				.withUserConfiguration(ManualConfigurationStackRegistryTestConfiguration.class)
+				.run(context -> assertThat(context.getBean(StackResourceRegistry.class)).isNotNull());
 	}
 
 	@Test
-	public void resourceIdResolver_withoutAnyStackConfiguration_availableAsConfiguredBean()
+	void stackRegistry_manualConfigurationEnabledAndStackNameProvided_returnsStaticStackNameProvider()
 			throws Exception {
-		// Arrange
-		this.context = new AnnotationConfigApplicationContext();
-		this.context.register(ContextStackAutoConfiguration.class);
-		TestPropertyValues.of("cloud.aws.stack.auto:false").applyTo(this.context);
-		// Act
-		this.context.refresh();
-
-		// Assert
-		assertThat(this.context.getBean(ResourceIdResolver.class)).isNotNull();
-		assertThat(this.context.getBeansOfType(StackResourceRegistry.class).isEmpty())
-				.isTrue();
+		this.contextRunner.withPropertyValues("cloud.aws.stack.name:manualStackName", "cloud.aws.stack.auto:true")
+				.withUserConfiguration(ManualConfigurationStackRegistryTestConfiguration.class).run(context -> {
+					assertThat(context.getBean(StaticStackNameProvider.class)).isNotNull();
+					assertThatThrownBy(() -> context.getBean(AutoDetectingStackNameProvider.class))
+							.isInstanceOf(NoSuchBeanDefinitionException.class);
+				});
 	}
 
-	@Configuration
+	@Test
+	void resourceIdResolver_withoutAnyStackConfiguration_availableAsConfiguredBean() {
+		this.contextRunner.withPropertyValues("cloud.aws.stack.auto:false").run(context -> {
+			assertThat(context.getBean(ResourceIdResolver.class)).isNotNull();
+			assertThat(context.getBeansOfType(StackResourceRegistry.class).isEmpty()).isTrue();
+		});
+	}
+
+	@Test
+	void stackResourceRegistryFactoryBean_isNotCreatedWhenStackNameAbsentAndStackAutoFalse() {
+		this.contextRunner.withPropertyValues("cloud.aws.stack.auto:false")
+				.run(context -> assertThatThrownBy(() -> context.getBean("stackResourceRegistryFactoryBean"))
+						.isInstanceOf(NoSuchBeanDefinitionException.class));
+	}
+
+	@Test
+	void stackIsDisabled() {
+		this.contextRunner.withPropertyValues("cloud.aws.stack.enabled:false")
+				.run(context -> assertThat(context).doesNotHaveBean(StackNameProvider.class));
+	}
+
+	@Configuration(proxyBeanMethods = false)
 	static class AutoConfigurationStackRegistryTestConfiguration {
 
 		@Bean
-		public AmazonCloudFormation amazonCloudFormation() {
-			AmazonCloudFormation amazonCloudFormation = Mockito
-					.mock(AmazonCloudFormation.class);
-			Mockito.when(amazonCloudFormation.describeStackResources(
-					new DescribeStackResourcesRequest().withPhysicalResourceId("test")))
-					.thenReturn(new DescribeStackResourcesResult().withStackResources(
-							new StackResource().withStackName("testStack")));
-			Mockito.when(amazonCloudFormation.listStackResources(
-					new ListStackResourcesRequest().withStackName("testStack")))
-					.thenReturn(new ListStackResourcesResult()
-							.withStackResourceSummaries(Collections.emptyList()));
+		AmazonCloudFormation amazonCloudFormation() {
+			AmazonCloudFormation amazonCloudFormation = Mockito.mock(AmazonCloudFormation.class);
+			Mockito.when(amazonCloudFormation
+					.describeStackResources(new DescribeStackResourcesRequest().withPhysicalResourceId("test")))
+					.thenReturn(new DescribeStackResourcesResult()
+							.withStackResources(new StackResource().withStackName("testStack")));
+			Mockito.when(
+					amazonCloudFormation.listStackResources(new ListStackResourcesRequest().withStackName("testStack")))
+					.thenReturn(new ListStackResourcesResult().withStackResourceSummaries(Collections.emptyList()));
 			return amazonCloudFormation;
 		}
 
 	}
 
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	static class ManualConfigurationStackRegistryTestConfiguration {
 
 		@Bean
-		public AmazonCloudFormation amazonCloudFormation() {
-			AmazonCloudFormation amazonCloudFormation = Mockito
-					.mock(AmazonCloudFormation.class);
-			Mockito.when(amazonCloudFormation.listStackResources(
-					new ListStackResourcesRequest().withStackName("manualStackName")))
-					.thenReturn(new ListStackResourcesResult()
-							.withStackResourceSummaries(Collections.emptyList()));
+		AmazonCloudFormation amazonCloudFormation() {
+			AmazonCloudFormation amazonCloudFormation = Mockito.mock(AmazonCloudFormation.class);
+			Mockito.when(amazonCloudFormation
+					.listStackResources(new ListStackResourcesRequest().withStackName("manualStackName")))
+					.thenReturn(new ListStackResourcesResult().withStackResourceSummaries(Collections.emptyList()));
 			return amazonCloudFormation;
 		}
 

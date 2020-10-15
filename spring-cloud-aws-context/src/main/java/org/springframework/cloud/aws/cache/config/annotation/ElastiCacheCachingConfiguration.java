@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.services.elasticache.AmazonElastiCache;
 import com.amazonaws.services.elasticache.AmazonElastiCacheClient;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cloud.aws.cache.CacheFactory;
 import org.springframework.cloud.aws.cache.memcached.MemcachedCacheFactory;
@@ -49,9 +49,12 @@ import org.springframework.util.Assert;
 
 /**
  * @author Agim Emruli
+ * @author Eddú Meléndez
+ * @deprecated use auto-configuration
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Import(ContextDefaultConfigurationRegistrar.class)
+@Deprecated
 public class ElastiCacheCachingConfiguration implements ImportAware {
 
 	private static final String CACHE_CLUSTER_CONFIG_ATTRIBUTE_NAME = AnnotationUtils.VALUE;
@@ -60,44 +63,46 @@ public class ElastiCacheCachingConfiguration implements ImportAware {
 
 	private AnnotationAttributes annotationAttributes;
 
-	@Autowired(required = false)
-	private RegionProvider regionProvider;
+	private final RegionProvider regionProvider;
 
-	@Autowired(required = false)
-	private AWSCredentialsProvider credentialsProvider;
+	private final AWSCredentialsProvider credentialsProvider;
 
-	@Autowired(required = false)
-	private ListableStackResourceFactory stackResourceFactory;
+	private final ListableStackResourceFactory stackResourceFactory;
+
+	public ElastiCacheCachingConfiguration(ObjectProvider<RegionProvider> regionProvider,
+			ObjectProvider<AWSCredentialsProvider> credentialsProvider,
+			ObjectProvider<ListableStackResourceFactory> stackResourceFactory) {
+		this.regionProvider = regionProvider.getIfAvailable();
+		this.credentialsProvider = credentialsProvider.getIfAvailable();
+		this.stackResourceFactory = stackResourceFactory.getIfAvailable();
+	}
 
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
-		this.annotationAttributes = AnnotationAttributes.fromMap(importMetadata
-				.getAnnotationAttributes(EnableElastiCache.class.getName(), false));
+		this.annotationAttributes = AnnotationAttributes
+				.fromMap(importMetadata.getAnnotationAttributes(EnableElastiCache.class.getName(), false));
 		Assert.notNull(this.annotationAttributes,
-				"@EnableElasticache is not present on importing class "
-						+ importMetadata.getClassName());
+				"@EnableElasticache is not present on importing class " + importMetadata.getClassName());
 	}
 
 	@Bean
 	@ConditionalOnMissingAmazonClient(AmazonElastiCache.class)
 	public AmazonWebserviceClientFactoryBean<AmazonElastiCacheClient> amazonElastiCache() {
-		return new AmazonWebserviceClientFactoryBean<>(AmazonElastiCacheClient.class,
-				this.credentialsProvider, this.regionProvider);
+		return new AmazonWebserviceClientFactoryBean<>(AmazonElastiCacheClient.class, this.credentialsProvider,
+				this.regionProvider);
 	}
 
 	@Bean
 	public CachingConfigurer cachingConfigurer(AmazonElastiCache amazonElastiCache,
 			ResourceIdResolver resourceIdResolver, List<CacheFactory> cacheFactories) {
-		if (this.annotationAttributes != null
-				&& this.annotationAttributes.getAnnotationArray("value").length > 0) {
+		if (this.annotationAttributes != null && this.annotationAttributes.getAnnotationArray("value").length > 0) {
 			return new ElastiCacheCacheConfigurer(amazonElastiCache, resourceIdResolver,
-					getCacheNamesFromCacheClusterConfigs(
-							this.annotationAttributes.getAnnotationArray("value")),
+					getCacheNamesFromCacheClusterConfigs(this.annotationAttributes.getAnnotationArray("value")),
 					cacheFactories);
 		}
 		else {
-			return new ElastiCacheCacheConfigurer(amazonElastiCache, resourceIdResolver,
-					getConfiguredCachesInStack(), cacheFactories);
+			return new ElastiCacheCacheConfigurer(amazonElastiCache, resourceIdResolver, getConfiguredCachesInStack(),
+					cacheFactories);
 		}
 	}
 
@@ -105,11 +110,10 @@ public class ElastiCacheCachingConfiguration implements ImportAware {
 	@ConditionalOnClass("org.springframework.data.redis.connection.RedisConnectionFactory")
 	public RedisCacheFactory redisCacheFactory() {
 		RedisCacheFactory redisCacheFactory = new RedisCacheFactory();
-		redisCacheFactory.setExpiryTimePerCache(
-				getExpiryTimePerCacheFromAnnotationConfig(this.annotationAttributes
-						.getAnnotationArray(CACHE_CLUSTER_CONFIG_ATTRIBUTE_NAME)));
-		redisCacheFactory.setExpiryTime(this.annotationAttributes
-				.<Integer>getNumber(DEFAULT_EXPIRY_TIME_ATTRIBUTE_NAME));
+		redisCacheFactory.setExpiryTimePerCache(getExpiryTimePerCacheFromAnnotationConfig(
+				this.annotationAttributes.getAnnotationArray(CACHE_CLUSTER_CONFIG_ATTRIBUTE_NAME)));
+		redisCacheFactory
+				.setExpiryTime(this.annotationAttributes.<Integer>getNumber(DEFAULT_EXPIRY_TIME_ATTRIBUTE_NAME));
 		return redisCacheFactory;
 	}
 
@@ -117,16 +121,14 @@ public class ElastiCacheCachingConfiguration implements ImportAware {
 	@ConditionalOnClass("net.spy.memcached.MemcachedClient")
 	public MemcachedCacheFactory memcachedCacheFactory() {
 		MemcachedCacheFactory redisCacheFactory = new MemcachedCacheFactory();
-		redisCacheFactory.setExpiryTimePerCache(
-				getExpiryTimePerCacheFromAnnotationConfig(this.annotationAttributes
-						.getAnnotationArray(CACHE_CLUSTER_CONFIG_ATTRIBUTE_NAME)));
-		redisCacheFactory.setExpiryTime(this.annotationAttributes
-				.<Integer>getNumber(DEFAULT_EXPIRY_TIME_ATTRIBUTE_NAME));
+		redisCacheFactory.setExpiryTimePerCache(getExpiryTimePerCacheFromAnnotationConfig(
+				this.annotationAttributes.getAnnotationArray(CACHE_CLUSTER_CONFIG_ATTRIBUTE_NAME)));
+		redisCacheFactory
+				.setExpiryTime(this.annotationAttributes.<Integer>getNumber(DEFAULT_EXPIRY_TIME_ATTRIBUTE_NAME));
 		return redisCacheFactory;
 	}
 
-	private List<String> getCacheNamesFromCacheClusterConfigs(
-			AnnotationAttributes[] annotationAttributes) {
+	private List<String> getCacheNamesFromCacheClusterConfigs(AnnotationAttributes[] annotationAttributes) {
 		List<String> cacheNames = new ArrayList<>(annotationAttributes.length);
 		for (AnnotationAttributes annotationAttribute : annotationAttributes) {
 			cacheNames.add(annotationAttribute.getString("name"));
@@ -136,8 +138,7 @@ public class ElastiCacheCachingConfiguration implements ImportAware {
 
 	private Map<String, Integer> getExpiryTimePerCacheFromAnnotationConfig(
 			AnnotationAttributes[] annotationAttributes) {
-		Map<String, Integer> expiryTimePerCache = new HashMap<>(
-				annotationAttributes.length);
+		Map<String, Integer> expiryTimePerCache = new HashMap<>(annotationAttributes.length);
 		for (AnnotationAttributes annotationAttribute : annotationAttributes) {
 			expiryTimePerCache.put(annotationAttribute.getString("name"),
 					annotationAttribute.<Integer>getNumber("expiration"));
